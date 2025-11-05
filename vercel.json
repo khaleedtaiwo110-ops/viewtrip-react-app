@@ -1,11 +1,5 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "vite.config.js",
-      "use": "@vercel/static-build"
-    }
-  ],
   "framework": "vite",
   "installCommand": "npm install",
   "buildCommand": "chmod +x node_modules/.bin/vite && npm run build",
@@ -14,3 +8,4 @@
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
+
