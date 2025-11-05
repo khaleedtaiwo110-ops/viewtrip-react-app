@@ -3,15 +3,12 @@
   "builds": [
     {
       "src": "vite.config.js",
-      "use": "@vercel/static-build",
-      "config": {}
+      "use": "@vercel/static-build"
     }
   ],
   "framework": "vite",
-  "buildCommand": "npm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "npx vite build",
   "installCommand": "npm install",
-  "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
-  ]
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/(.*)", "destination": "/" }]
 }
