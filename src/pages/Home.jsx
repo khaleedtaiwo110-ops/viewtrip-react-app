@@ -100,7 +100,7 @@ export default function Home() {
         tripType: tripType === "round" ? "ROUNDTRIP" : "ONEWAY",
       });
       const res = await fetch(
-        `http://localhost:5000/api/flight-offers?${params}`
+        `https://view-trip-travels-app.onrender.com/api/flight-offers?${params}`
       );
       const data = await res.json();
       setFlightResults(data || []);
@@ -121,7 +121,7 @@ export default function Home() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/hotels", {
+      const res = await fetch("https://view-trip-travels-app.onrender.com/api/hotels", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -149,7 +149,7 @@ export default function Home() {
     }
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/book-flight", {
+      const res = await fetch("https://view-trip-travels-app.onrender.com/api/book-flight", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ flight: selectedFlight, passenger }),

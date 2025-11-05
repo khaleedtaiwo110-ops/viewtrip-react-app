@@ -1,12 +1,12 @@
 {
   "name": "viewtrip-react-app",
   "version": "1.0.0",
-  "description": "",
+  "description": "ViewTrip Travels frontend built with React, Tailwind, and Vite",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "npx vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "server": "node server.js",
     "start": "node server.js"
@@ -21,18 +21,18 @@
     "express": "^5.1.0",
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.548.0",
-    "react-router-dom": "^7.9.5",
-    "vite": "^7.1.12"
+    "react-router-dom": "^7.9.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.16",
     "@vitejs/plugin-react": "^5.1.0",
     "autoprefixer": "^10.4.21",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.16"
+    "tailwindcss": "^4.1.16",
+    "vite": "^7.1.12"
   },
   "engines": {
-    "node": ">=18"
+    "node": "18.x"
   },
   "keywords": [],
   "author": "",

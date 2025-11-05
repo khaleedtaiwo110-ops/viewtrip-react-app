@@ -5,9 +5,17 @@ import Amadeus from "amadeus";
 import axios from "axios";
 
 dotenv.config();
+// ✅ Enable CORS for all routes
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
+
+app.use(cors({
+  origin: "*", // You can later restrict this to your real frontend domain
+  methods: ["GET", "POST"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
 
 app.use(cors());
 app.use(express.json());

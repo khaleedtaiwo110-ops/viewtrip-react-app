@@ -34,7 +34,7 @@ export default function FlightOffers() {
 
   const fetchAirportSuggestions = async (query, field) => {
     try {
-      const res = await axios.get(`http://localhost:5000/api/search?keyword=${query}`);
+      const res = await axios.get(`https://view-trip-travels-app.onrender.com/api/search?keyword=${query}`);
       setSuggestions((prev) => ({ ...prev, [field]: res.data.slice(0, 5) }));
     } catch (err) {
       console.error("Autocomplete error:", err);
@@ -49,7 +49,7 @@ export default function FlightOffers() {
     setSelectedFlight(null);
 
     try {
-      const res = await axios.get("http://localhost:5000/api/flight-offers", {
+      const res = await axios.get("https://view-trip-travels-app.onrender.com/api/flight-offers", {
         params: { origin, destination, date, travelClass },
       });
       setResults(res.data);
@@ -72,7 +72,7 @@ export default function FlightOffers() {
   const handleBookFlight = async (e) => {
     e.preventDefault();
     try {
-      const res = await axios.post("http://localhost:5000/api/book-flight", {
+      const res = await axios.post("https://view-trip-travels-app.onrender.com/api/book-flight", {
         flight: selectedFlight,
         passenger: bookingData,
       });
