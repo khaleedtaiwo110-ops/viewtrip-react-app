@@ -10,6 +10,8 @@ import {
   X,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import TrendingHotels from "./TrendingHotels";
+import Tours from "./Tours"
 
 export default function Home() {
   const [tab, setTab] = useState("flights");
@@ -63,11 +65,11 @@ export default function Home() {
       title: "Bali, Indonesia",
     },
     {
-      img: "https://images.unsplash.com/photo-1558981001-6f0c94958bb6?auto=format&fit=crop&w=1400&q=80",
+      img: "hotel8.jpg",
       title: "Dubai, UAE",
     },
     {
-      img: "https://images.unsplash.com/photo-1543352634-9e4c8e97a3d5?auto=format&fit=crop&w=1400&q=80",
+      img: "hotel6.avif",
       title: "Lagos, Nigeria",
     },
   ];
@@ -615,6 +617,10 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+        {/* Trending Hotels Section */}
+      <TrendingHotels />
+      {/* Tours section */}
+      <Tours/>
     </div>
   );
 }

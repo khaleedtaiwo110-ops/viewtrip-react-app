@@ -15,7 +15,7 @@ const Navbar = () => {
     { name: "Testimonials", path: "/testimonials" },
     { name: "Contact", path: "/contact" },
     { name: "Search Flights", path: "/flight-offers" },
-    { name: "Booking", path: "/booking" },
+    // { name: "Booking", path: "/booking" },
     { name: "Visas", path: "/visas" },
   ];
 
@@ -28,8 +28,8 @@ const Navbar = () => {
             to="/"
             className="flex items-center text-2xl font-bold text-blue-600 hover:text-blue-700"
           >
-            <Plane className="mr-2 text-blue-500" size={24} />
-            ViewTrip
+            {/* <Plane className="mr-2 text-blue-500" size={24} /> */}
+            View Trip Travels
           </Link>
 
           {/* Desktop Menu */}
