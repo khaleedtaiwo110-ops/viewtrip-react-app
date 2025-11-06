@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import AdBanner from "../componentss/adsgoogle";
 
 const images = [
   {
@@ -92,6 +93,8 @@ export default function Gallery() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AdBanner />
+      <AdBanner />
     </div>
   );
 }

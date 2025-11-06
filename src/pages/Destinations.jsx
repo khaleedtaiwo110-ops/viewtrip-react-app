@@ -1,4 +1,5 @@
 import React from "react";
+import AdBanner from "../componentss/adsgoogle";
 
 const destinations = [
   { name: "Paris", img: "/paris.jpg" },
@@ -93,6 +94,7 @@ const Destinations = () => {
           animation: float-slower 12s ease-in-out infinite;
         }
       `}</style>
+      <AdBanner />
     </section>
   );
 };

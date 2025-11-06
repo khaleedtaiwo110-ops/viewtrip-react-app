@@ -1,5 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
+import AdBanner from "../componentss/adsgoogle";
 
 const visaOptions = [
   {
@@ -120,6 +121,8 @@ const VisaPricing = () => {
           animation: float-slow 10s ease-in-out infinite;
         }
       `}</style>
+      <AdBanner />
+      <AdBanner />
     </section>
   );
 };

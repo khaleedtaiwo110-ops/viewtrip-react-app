@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import emailjs from "@emailjs/browser";
 import { MapPin, Phone, Mail } from "lucide-react";
+import AdBanner from "../componentss/adsgoogle";
 
 const Contact = () => {
   const form = useRef();
@@ -132,6 +133,7 @@ const Contact = () => {
           </form>
         </div>
       </section>
+      <AdBanner />
 
       {/* Google Maps Embed */}
       <section className="w-full h-[400px] -mt-8 relative z-10">
@@ -175,6 +177,7 @@ const Contact = () => {
           animation: float-slower 12s ease-in-out infinite;
         }
       `}</style>
+      <AdBanner />
     </div>
   );
 };

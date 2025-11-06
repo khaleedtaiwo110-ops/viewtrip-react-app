@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
+import AdBanner from "../componentss/adsgoogle";
 
 export default function FlightOffers() {
   const [origin, setOrigin] = useState("");
@@ -436,6 +437,8 @@ export default function FlightOffers() {
           )}
         </AnimatePresence>
       </div>
+      <AdBanner />
+      <AdBanner />
     </div>
   );
 }

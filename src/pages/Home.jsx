@@ -12,6 +12,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import TrendingHotels from "./TrendingHotels";
 import Tours from "./Tours"
+import AdBanner from "../componentss/adsgoogle";
 
 export default function Home() {
   const [tab, setTab] = useState("flights");
@@ -617,10 +618,13 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AdBanner />
         {/* Trending Hotels Section */}
       <TrendingHotels />
       {/* Tours section */}
+      <AdBanner />
       <Tours/>
+      <AdBanner />
     </div>
   );
 }

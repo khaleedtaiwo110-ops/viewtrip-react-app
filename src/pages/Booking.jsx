@@ -1,6 +1,8 @@
 // Booking.jsx
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
+import AdBanner from "../componentss/adsgoogle";
+
 
 const Booking = () => {
   const location = useLocation();
@@ -259,6 +261,7 @@ const Booking = () => {
             Submit Booking
           </button>
         </form>
+        <AdBanner />
       </div>
     </section>
   );

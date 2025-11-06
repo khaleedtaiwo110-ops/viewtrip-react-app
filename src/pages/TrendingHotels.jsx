@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import AdBanner from "../componentss/adsgoogle";
 
 const hotels = [
   { name: "Grand Palace Hotel", location: "Paris, France", price: 250, image: "hotel6.avif" },
@@ -135,7 +136,10 @@ export default function TrendingHotels() {
             </motion.div>
           )}
         </AnimatePresence>
+        <AdBanner />
       </div>
+      <AdBanner />
+
     </section>
   );
 }

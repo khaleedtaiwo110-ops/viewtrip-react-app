@@ -1,6 +1,7 @@
 import React, { useRef, useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import AdBanner from "../componentss/adsgoogle";
 
 const tours = [
   {
@@ -172,7 +173,10 @@ export default function Tours() {
             </motion.div>
           )}
         </AnimatePresence>
+        <AdBanner />
       </div>
+      <AdBanner />
+      <AdBanner />
     </section>
   );
 }
