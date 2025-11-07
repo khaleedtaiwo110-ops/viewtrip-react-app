@@ -12,6 +12,7 @@ import Booking from "./pages/Booking";
 import FlightOffers from "./pages/FlightOffers";
 import BookingForm from "./components/BookingForm";
 import VisaSection from "./pages/visa";
+import Blog from "./pages/Blog";
 
 
 function App() {
@@ -30,6 +31,7 @@ function App() {
           <Route path="/flight-offers" element={<FlightOffers />} />
           <Route path="/book" element={<BookingForm />} />
           <Route path="/visas" element={<VisaSection />} />
+          <Route path="/blog" element={<Blog/>} />
 
         </Routes>
       </main>

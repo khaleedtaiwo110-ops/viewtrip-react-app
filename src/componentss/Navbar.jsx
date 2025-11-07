@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Menu, X, Plane } from "lucide-react";
+import { path } from "framer-motion/client";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -17,6 +18,7 @@ const Navbar = () => {
     { name: "Search Flights", path: "/flight-offers" },
     // { name: "Booking", path: "/booking" },
     { name: "Visas", path: "/visas" },
+    { name: "Travel blog", path: "/blog"}
   ];
 
   return (
