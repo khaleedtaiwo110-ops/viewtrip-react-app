@@ -6,7 +6,7 @@ export default function Blog() {
   const [selectedBlog, setSelectedBlog] = useState(null);
 
   useEffect(() => {
-    fetch("/data/blogs.json")
+    fetch("/blogs.json")
       .then((res) => res.json())
       .then((data) => setBlogs(data))
       .catch((err) => console.error("Error loading blogs:", err));

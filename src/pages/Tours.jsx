@@ -8,7 +8,7 @@ const Tours = () => {
 
   // Fetch tour packages from JSON file
   useEffect(() => {
-    fetch("/data/tour.json")
+    fetch("/tour.json")
       .then((res) => res.json())
       .then((data) => setTours(data))
       .catch((err) => console.error("Error loading tours:", err));
