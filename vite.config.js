@@ -3,10 +3,16 @@ import react from "@vitejs/plugin-react";
 
 export default defineConfig({
   plugins: [react()],
+
   css: {
     modules: {
-      // 👇 This line forces index.css to be treated as a global stylesheet
+      // 👇 Treat all CSS as global
       scopeBehaviour: "global",
-    },
+    }
   },
+
+  build: {
+    // 👇 Correct place for output directory
+    outDir: 'dist'
+  }
 });
