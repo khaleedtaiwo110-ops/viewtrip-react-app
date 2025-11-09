@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import AdBanner from "../componentss/adsgoogle";
 
 const Tours = () => {
   const [tours, setTours] = useState([]);
@@ -118,6 +119,7 @@ const Tours = () => {
         src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-2543320626959498"
         crossOrigin="anonymous"
       ></script>
+      <AdBanner ></AdBanner>
     </section>
   );
 };

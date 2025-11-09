@@ -4,16 +4,16 @@ import { useNavigate } from "react-router-dom";
 import AdBanner from "../componentss/adsgoogle";
 
 const hotels = [
-  { name: "Grand Palace Hotel", location: "Paris, France", price: 250, image: "hotel6.avif" },
-  { name: "Ocean View Resort", location: "Lagos, Nigeria", price: 400, image: "hotel8.jpg" },
-  { name: "City Lights Hotel", location: "Dubai, UAE", price: 180, image: "hotel 10.jpg" },
-  { name: "Mountain Escape Lodge", location: "Lagos, Nigeria", price: 320, image: "hotel4.webp" },
-  { name: "Seaside Paradise", location: "Maldives", price: 450, image: "hotel6.avif" },
-  { name: "Royal Garden Hotel", location: "London, UK", price: 300, image: "hotel5.webp" },
-  { name: "Sunset Beach Resort", location: "Hawaii, USA", price: 420, image: "hotel3.webp" },
-  { name: "Alpine Retreat", location: "Switzerland", price: 350, image: "hotel2.webp" },
-  { name: "Urban Stay", location: "New York, USA", price: 200, image: "hotel9.webp" },
-  { name: "Tropical Escape", location: "Thailand", price: 280, image: "hotel7.avif" },
+  { name: "Grand Palace Hotel", location: "Paris, France", price: 250, image: "/images/hotel6.avif" },
+  { name: "Ocean View Resort", location: "Lagos, Nigeria", price: 400, image: "/images/hotel8.jpg" },
+  { name: "City Lights Hotel", location: "Dubai, UAE", price: 180, image: "/images/hotel 10.jpg" },
+  { name: "Mountain Escape Lodge", location: "Lagos, Nigeria", price: 320, image: "/images/hotel4.webp" },
+  { name: "Seaside Paradise", location: "Maldives", price: 450, image: "/images/hotel6.avif" },
+  { name: "Royal Garden Hotel", location: "London, UK", price: 300, image: "/images/hotel5.webp" },
+  { name: "Sunset Beach Resort", location: "Hawaii, USA", price: 420, image: "/images/hotel3.webp" },
+  { name: "Alpine Retreat", location: "Switzerland", price: 350, image: "/images/hotel2.webp" },
+  { name: "Urban Stay", location: "New York, USA", price: 200, image: "/images/hotel9.webp" },
+  { name: "Tropical Escape", location: "Thailand", price: 280, image: "/images/hotel7.avif" },
 ];
 
 export default function TrendingHotels() {

@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import AdBanner from "../componentss/adsgoogle";
 
 export default function Blog() {
   const [blogs, setBlogs] = useState([]);
@@ -13,7 +14,7 @@ export default function Blog() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50 py-12 px-6">
+    <div className="min-h-screen bg-linear-to-b from-white to-gray-50 py-12 px-6">
       <h1 className="text-4xl font-bold text-center text-indigo-700 mb-10">
         Travel Blog
       </h1>
@@ -91,6 +92,7 @@ export default function Blog() {
           </motion.div>
         )}
       </AnimatePresence>
+      <AdBanner/>
     </div>
   );
 }
