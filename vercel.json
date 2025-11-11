@@ -2,11 +2,12 @@
   "version": 2,
   "framework": "vite",
   "installCommand": "npm install",
-  "buildCommand": "cd viewtrip-react-app && npm install && npm run build",
-  "outputDirectory": "viewtrip-react-app/dist",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
+
 
  
