@@ -5,7 +5,9 @@
   "installCommand": "npm install",
   "buildCommand": "npm run build",
   "outputDirectory": "viewtrip-react-app/dist",
+   
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }
+ 
