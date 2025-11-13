@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import Amadeus from "amadeus";
 import axios from "axios";
 import nodemailer from "nodemailer";
+import sgMail from "@sendgrid/mail";
 
 dotenv.config();
 
@@ -96,23 +97,22 @@ app.post("/api/book-flight", async (req, res) => {
 });
 
 // ✅ 🆕 Send Booking Email + Confirmation to Customer
-app.post("/api/send-booking", async (req, res) => {
+// Set SendGrid API key
+sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+
+// POST /send-booking
+app.post("/send-booking", async (req, res) => {
   const booking = req.body;
-  console.log("📩 New booking received:", booking);
+
+  if (!booking.name || !booking.email || !booking.type || !booking.itemName) {
+    return res.status(400).json({ message: "Missing required booking fields" });
+  }
 
   try {
-    const transporter = nodemailer.createTransport({
-      service: "gmail",
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-      },
-    });
-
-    // ✉️ Email to Admin (You)
-    const adminMail = {
-      from: `"ViewTrip Travels" <${process.env.EMAIL_USER}>`,
+    // ✉️ Email to Admin
+    const adminMsg = {
       to: process.env.EMAIL_RECEIVER || process.env.EMAIL_USER,
+      from: process.env.EMAIL_USER,
       subject: `🧳 New ${booking.type.toUpperCase()} Booking from ${booking.name}`,
       html: `
         <h2>New Booking Details</h2>
@@ -145,13 +145,13 @@ app.post("/api/send-booking", async (req, res) => {
       `,
     };
 
-    await transporter.sendMail(adminMail);
+    await sgMail.send(adminMsg);
     console.log("✅ Admin booking email sent successfully!");
 
-    // ✉️ Confirmation Email to Customer
-    const customerMail = {
-      from: `"ViewTrip Travels" <${process.env.EMAIL_USER}>`,
+    // ✉️ Email to Customer
+    const customerMsg = {
       to: booking.email,
+      from: process.env.EMAIL_USER,
       subject: `✅ Booking Confirmation - ViewTrip Travels`,
       html: `
         <h2>Dear ${booking.name},</h2>
@@ -190,18 +190,20 @@ app.post("/api/send-booking", async (req, res) => {
       `,
     };
 
-    await transporter.sendMail(customerMail);
+    await sgMail.send(customerMsg);
     console.log("✅ Confirmation email sent to customer!");
 
     res.status(200).json({ message: "Booking submitted successfully! Emails sent ✅" });
   } catch (error) {
-    console.error("❌ Error sending booking emails:", error);
+    console.error("❌ Error sending booking emails via SendGrid:", error);
     res.status(500).json({ message: "Failed to send booking emails ❌" });
   }
 });
 
-// ✅ Start Server
-app.listen(PORT, () => {
-  console.log(`✅ Server running on http://localhost:${PORT}`);
+// Health check
+app.get("/", (req, res) => {
+  res.send("Server is running ✅");
 });
- 
+
+// Start server
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
