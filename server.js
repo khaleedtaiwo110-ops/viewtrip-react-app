@@ -3,21 +3,20 @@ import cors from "cors";
 import dotenv from "dotenv";
 import Amadeus from "amadeus";
 import axios from "axios";
+import nodemailer from "nodemailer";
 
 dotenv.config();
-// ✅ Enable CORS for all routes
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-
-app.use(cors({
-  origin: "*", // You can later restrict this to your real frontend domain
-  methods: ["GET", "POST"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
-
-app.use(cors());
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 // ✅ Initialize Amadeus client
@@ -26,21 +25,7 @@ const amadeus = new Amadeus({
   clientSecret: process.env.AMADEUS_CLIENT_SECRET,
 });
 
-// ✅ Health/Test Route
-app.get("/test-amadeus", async (req, res) => {
-  try {
-    const response = await amadeus.referenceData.locations.get({
-      keyword: "LON",
-      subType: "CITY",
-    });
-    res.json(response.data);
-  } catch (error) {
-    console.error("❌ Test route error:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ✅ City or Airport Search (Autocomplete)
+// ✅ City or Airport Search
 app.get("/api/search", async (req, res) => {
   const { keyword } = req.query;
   if (!keyword) return res.status(400).json({ error: "Missing keyword" });
@@ -84,9 +69,7 @@ app.get("/api/flight-offers", async (req, res) => {
       travelClass: travelClass.toUpperCase(),
     };
 
-    if (tripType === "ROUNDTRIP" && returnDate) {
-      params.returnDate = returnDate;
-    }
+    if (tripType === "ROUNDTRIP" && returnDate) params.returnDate = returnDate;
 
     const response = await amadeus.shopping.flightOffersSearch.get(params);
     res.json(response.data);
@@ -96,81 +79,11 @@ app.get("/api/flight-offers", async (req, res) => {
   }
 });
 
-// ✅ Hotel Search (final stable version)
-// ✅ Modern Amadeus hotel search (2-step process)
-app.post("/api/hotels", async (req, res) => {
-  const { cityCode, checkInDate, checkOutDate, adults = 1 } = req.body;
-
-  if (!cityCode || !checkInDate || !checkOutDate) {
-    return res.status(400).json({ error: "Missing required parameters" });
-  }
-
-  try {
-    // Step 1️⃣ — Obtain a valid token
-    const tokenResponse = await axios.post(
-      "https://test.api.amadeus.com/v1/security/oauth2/token",
-      new URLSearchParams({
-        grant_type: "client_credentials",
-        client_id: process.env.AMADEUS_CLIENT_ID,
-        client_secret: process.env.AMADEUS_CLIENT_SECRET,
-      }),
-      {
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      }
-    );
-
-    const token = tokenResponse.data.access_token;
-
-    // Step 2️⃣ — Find hotels in the city to get IDs
-    const hotelListResponse = await axios.get(
-      "https://test.api.amadeus.com/v1/reference-data/locations/hotels/by-city",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        params: { cityCode: cityCode.toUpperCase() },
-      }
-    );
-
-    const hotelIds = hotelListResponse.data.data
-      .slice(0, 5) // limit to top 5
-      .map((h) => h.hotelId)
-      .filter(Boolean);
-
-    if (hotelIds.length === 0) {
-      return res.status(404).json({ error: "No hotels found for this city." });
-    }
-
-    // Step 3️⃣ — Get offers for those hotels
-    const offersResponse = await axios.get(
-      "https://test.api.amadeus.com/v3/shopping/hotel-offers",
-      {
-        headers: { Authorization: `Bearer ${token}` },
-        params: {
-          hotelIds: hotelIds.join(","),
-          checkInDate: new Date(checkInDate).toISOString().split("T")[0],
-          checkOutDate: new Date(checkOutDate).toISOString().split("T")[0],
-          adults: Number(adults),
-          currencyCode: "USD",
-        },
-      }
-    );
-
-    console.log(`✅ Received ${offersResponse.data.data?.length || 0} hotel offers for ${cityCode}`);
-    res.json(offersResponse.data);
-  } catch (error) {
-    const err = error.response?.data || error.message;
-    console.error("❌ Amadeus Hotel Search Error:", err);
-    res.status(500).json({ error: err });
-  }
-});
-
-
 // ✅ Simulate Flight Booking
 app.post("/api/book-flight", async (req, res) => {
   const { flight, passenger } = req.body;
-
-  if (!flight || !passenger) {
+  if (!flight || !passenger)
     return res.status(400).json({ error: "Missing flight or passenger data" });
-  }
 
   try {
     const bookingId = "PNR" + Math.floor(Math.random() * 1000000);
@@ -182,7 +95,113 @@ app.post("/api/book-flight", async (req, res) => {
   }
 });
 
+// ✅ 🆕 Send Booking Email + Confirmation to Customer
+app.post("/api/send-booking", async (req, res) => {
+  const booking = req.body;
+  console.log("📩 New booking received:", booking);
+
+  try {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // ✉️ Email to Admin (You)
+    const adminMail = {
+      from: `"ViewTrip Travels" <${process.env.EMAIL_USER}>`,
+      to: process.env.EMAIL_RECEIVER || process.env.EMAIL_USER,
+      subject: `🧳 New ${booking.type.toUpperCase()} Booking from ${booking.name}`,
+      html: `
+        <h2>New Booking Details</h2>
+        <p><b>Name:</b> ${booking.name}</p>
+        <p><b>Email:</b> ${booking.email}</p>
+        <p><b>Type:</b> ${booking.type}</p>
+        <p><b>Item:</b> ${booking.itemName}</p>
+        ${
+          booking.type === "flight"
+            ? `<p><b>Passengers:</b> ${booking.passengers}</p><p><b>Class:</b> ${booking.travelClass}</p>`
+            : ""
+        }
+        ${
+          booking.type === "hotel"
+            ? `<p><b>Check-in:</b> ${booking.checkIn}</p><p><b>Check-out:</b> ${booking.checkOut}</p><p><b>Guests:</b> ${booking.guests}</p>`
+            : ""
+        }
+        ${
+          booking.type === "tour"
+            ? `<p><b>Travelers:</b> ${booking.travelers}</p><p><b>Special Requests:</b> ${booking.specialRequests}</p>`
+            : ""
+        }
+        ${
+          booking.type === "visa"
+            ? `<p><b>Country:</b> ${booking.country}</p>`
+            : ""
+        }
+        <hr/>
+        <p style="color: gray;">Sent automatically from your ViewTrip website.</p>
+      `,
+    };
+
+    await transporter.sendMail(adminMail);
+    console.log("✅ Admin booking email sent successfully!");
+
+    // ✉️ Confirmation Email to Customer
+    const customerMail = {
+      from: `"ViewTrip Travels" <${process.env.EMAIL_USER}>`,
+      to: booking.email,
+      subject: `✅ Booking Confirmation - ViewTrip Travels`,
+      html: `
+        <h2>Dear ${booking.name},</h2>
+        <p>Thank you for booking your ${booking.type} with <b>ViewTrip Travels</b>!</p>
+        <p>We have received your booking for <b>${booking.itemName}</b>.</p>
+        <p>Our team will contact you shortly with further details.</p>
+        <br/>
+        <p><b>Booking Summary:</b></p>
+        <ul>
+          <li>Type: ${booking.type}</li>
+          <li>Item: ${booking.itemName}</li>
+          ${
+            booking.type === "flight"
+              ? `<li>Passengers: ${booking.passengers}</li><li>Class: ${booking.travelClass}</li>`
+              : ""
+          }
+          ${
+            booking.type === "hotel"
+              ? `<li>Check-in: ${booking.checkIn}</li><li>Check-out: ${booking.checkOut}</li><li>Guests: ${booking.guests}</li>`
+              : ""
+          }
+          ${
+            booking.type === "tour"
+              ? `<li>Travelers: ${booking.travelers}</li><li>Special Requests: ${booking.specialRequests}</li>`
+              : ""
+          }
+          ${
+            booking.type === "visa"
+              ? `<li>Country: ${booking.country}</li>`
+              : ""
+          }
+        </ul>
+        <p>We appreciate your trust in us!</p>
+        <p>Warm regards,</p>
+        <p><b>ViewTrip Travels</b></p>
+      `,
+    };
+
+    await transporter.sendMail(customerMail);
+    console.log("✅ Confirmation email sent to customer!");
+
+    res.status(200).json({ message: "Booking submitted successfully! Emails sent ✅" });
+  } catch (error) {
+    console.error("❌ Error sending booking emails:", error);
+    res.status(500).json({ message: "Failed to send booking emails ❌" });
+  }
+});
+
 // ✅ Start Server
 app.listen(PORT, () => {
   console.log(`✅ Server running on http://localhost:${PORT}`);
 });
+ 

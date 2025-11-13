@@ -3,7 +3,6 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import AdBanner from "../componentss/adsgoogle";
 
-
 const Booking = () => {
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -51,33 +50,52 @@ const Booking = () => {
     }
   }, [preselectedFlight, preselectedHotel, preselectedTour, preselectedCountry]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const info = { name, email, type: bookingType, itemName };
 
     if (bookingType === "flight") {
       info.passengers = passengers;
       info.travelClass = travelClass;
     }
-
     if (bookingType === "hotel") {
       info.checkIn = checkIn;
       info.checkOut = checkOut;
       info.guests = guests;
     }
-
     if (bookingType === "tour") {
       info.travelers = travelers;
       info.specialRequests = specialRequests;
     }
-
     if (bookingType === "visa") {
       info.country = itemName;
     }
 
-    console.log("Booking Info:", info);
-    alert("Booking submitted! Check console for details.");
-    // Here you can send `info` to your backend API
+    try {
+      const res = await fetch("https://view-trip-travels-app.onrender.com//api/send-booking", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(info),
+      });
+      const data = await res.json();
+      alert(data.message);
+      // Reset form
+      setName("");
+      setEmail("");
+      setPassengers(1);
+      setTravelClass("ECONOMY");
+      setCheckIn("");
+      setCheckOut("");
+      setGuests(1);
+      setTravelers(1);
+      setSpecialRequests("");
+      setItemName("");
+      setBookingType("");
+    } catch (err) {
+      console.error("Booking send error:", err);
+      alert("Failed to send booking. Please try again.");
+    }
   };
 
   return (
@@ -90,7 +108,9 @@ const Booking = () => {
             ? "Hotel Booking"
             : bookingType === "tour"
             ? "Tour Booking"
-            : "Visa Booking"}
+            : bookingType === "visa"
+            ? "Visa Booking"
+            : "Booking"}
         </h2>
 
         <form
@@ -268,4 +288,3 @@ const Booking = () => {
 };
 
 export default Booking;
-
