@@ -73,7 +73,7 @@ const Booking = () => {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/send-booking", {
+      const res = await fetch("http://localhost:5000/api/send-booking", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(info),
