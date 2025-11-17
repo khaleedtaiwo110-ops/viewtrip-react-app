@@ -72,9 +72,10 @@ const Booking = () => {
       info.country = itemName;
     }
 
-    try {
-      const res = await fetch("http://localhost:5000/send-booking", {
-        method: "POST",
+try {
+  const res = await fetch("https://view-trip-travels-app.onrender.com/send-booking", {
+    method: "GET",
+
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(info),
       });

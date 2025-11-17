@@ -18,7 +18,8 @@ const Navbar = () => {
     { name: "Search Flights", path: "/flight-offers" },
     // { name: "Booking", path: "/booking" },
     { name: "Visas", path: "/visas" },
-    { name: "Travel blog", path: "/blog"}
+    { name: "Travel blog", path: "/blog"},
+    { name: "Trendinghotels", path: "/Trendinghotels"}
   ];
 
   return (

@@ -80,6 +80,44 @@ app.get("/api/flight-offers", async (req, res) => {
   }
 });
 
+// ✅ FIXED HOTEL SEARCH API
+app.get("/api/hotels", async (req, res) => {
+  const { cityCode, checkInDate, checkOutDate, adults = 1 } = req.query;
+
+  if (!cityCode || !checkInDate || !checkOutDate) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // ⭐ STEP 1: Get hotel IDs for the city
+    const hotelsRes = await amadeus.referenceData.locations.hotels.byCity.get({
+      cityCode,
+    });
+
+    const hotelIds = hotelsRes.data.map(h => h.hotelId).slice(0, 20); // take first 20 hotels
+
+    if (!hotelIds.length) {
+      return res.status(404).json({ error: "No hotels found in this city" });
+    }
+
+    // ⭐ STEP 2: Fetch offers using hotel IDs
+    const offersRes = await amadeus.shopping.hotelOffersSearch.get({
+      hotelIds: hotelIds.join(","),
+      checkInDate,
+      checkOutDate,
+      adults,
+      currency: "USD",
+    });
+
+    return res.json({ data: offersRes.data });
+
+  } catch (error) {
+    console.error("❌ FIXED HOTEL SEARCH ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // ✅ Simulate Flight Booking
 app.post("/api/book-flight", async (req, res) => {
   const { flight, passenger } = req.body;
@@ -97,110 +135,62 @@ app.post("/api/book-flight", async (req, res) => {
 });
 
 // ✅ 🆕 Send Booking Email + Confirmation to Customer
-// Set SendGrid API key
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-// POST /send-booking
-app.post("/send-booking", async (req, res) => {
-  const booking = req.body;
-
-  if (!booking.name || !booking.email || !booking.type || !booking.itemName) {
-    return res.status(400).json({ message: "Missing required booking fields" });
-  }
+app.get("/api/send-booking", async (req, res) => {
+  const booking = req.query;
+  console.log("📩 New booking received:", booking);
 
   try {
-    // ✉️ Email to Admin
-    const adminMsg = {
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    // Email to Admin
+    const adminMail = {
+      from: `"ViewTrip Travels" <${process.env.EMAIL_USER}>`,
       to: process.env.EMAIL_RECEIVER || process.env.EMAIL_USER,
-      from: process.env.EMAIL_USER,
-      subject: `🧳 New ${booking.type.toUpperCase()} Booking from ${booking.name}`,
+      subject: `🧳 New ${booking.type?.toUpperCase()} Booking from ${booking.name}`,
       html: `
         <h2>New Booking Details</h2>
         <p><b>Name:</b> ${booking.name}</p>
         <p><b>Email:</b> ${booking.email}</p>
         <p><b>Type:</b> ${booking.type}</p>
         <p><b>Item:</b> ${booking.itemName}</p>
-        ${
-          booking.type === "flight"
-            ? `<p><b>Passengers:</b> ${booking.passengers}</p><p><b>Class:</b> ${booking.travelClass}</p>`
-            : ""
-        }
-        ${
-          booking.type === "hotel"
-            ? `<p><b>Check-in:</b> ${booking.checkIn}</p><p><b>Check-out:</b> ${booking.checkOut}</p><p><b>Guests:</b> ${booking.guests}</p>`
-            : ""
-        }
-        ${
-          booking.type === "tour"
-            ? `<p><b>Travelers:</b> ${booking.travelers}</p><p><b>Special Requests:</b> ${booking.specialRequests}</p>`
-            : ""
-        }
-        ${
-          booking.type === "visa"
-            ? `<p><b>Country:</b> ${booking.country}</p>`
-            : ""
-        }
-        <hr/>
-        <p style="color: gray;">Sent automatically from your ViewTrip website.</p>
       `,
     };
 
-    await sgMail.send(adminMsg);
-    console.log("✅ Admin booking email sent successfully!");
-
-    // ✉️ Email to Customer
-    const customerMsg = {
+    // Email to Customer
+    const customerMail = {
+      from: `"ViewTrip Travels" <${process.env.EMAIL_USER}>`,
       to: booking.email,
-      from: process.env.EMAIL_USER,
       subject: `✅ Booking Confirmation - ViewTrip Travels`,
       html: `
         <h2>Dear ${booking.name},</h2>
         <p>Thank you for booking your ${booking.type} with <b>ViewTrip Travels</b>!</p>
-        <p>We have received your booking for <b>${booking.itemName}</b>.</p>
-        <p>Our team will contact you shortly with further details.</p>
+        <p>We’ve received your booking for <b>${booking.itemName}</b>.</p>
+        <p>Our team will contact you shortly.</p>
         <br/>
-        <p><b>Booking Summary:</b></p>
-        <ul>
-          <li>Type: ${booking.type}</li>
-          <li>Item: ${booking.itemName}</li>
-          ${
-            booking.type === "flight"
-              ? `<li>Passengers: ${booking.passengers}</li><li>Class: ${booking.travelClass}</li>`
-              : ""
-          }
-          ${
-            booking.type === "hotel"
-              ? `<li>Check-in: ${booking.checkIn}</li><li>Check-out: ${booking.checkOut}</li><li>Guests: ${booking.guests}</li>`
-              : ""
-          }
-          ${
-            booking.type === "tour"
-              ? `<li>Travelers: ${booking.travelers}</li><li>Special Requests: ${booking.specialRequests}</li>`
-              : ""
-          }
-          ${
-            booking.type === "visa"
-              ? `<li>Country: ${booking.country}</li>`
-              : ""
-          }
-        </ul>
-        <p>We appreciate your trust in us!</p>
-        <p>Warm regards,</p>
-        <p><b>ViewTrip Travels</b></p>
+        <p><b>Warm regards,</b><br/>ViewTrip Travels</p>
       `,
     };
 
-    await sgMail.send(customerMsg);
-    console.log("✅ Confirmation email sent to customer!");
+    await transporter.sendMail(adminMail);
+    await transporter.sendMail(customerMail);
 
-    res.status(200).json({ message: "Booking submitted successfully! Emails sent ✅" });
+    console.log("✅ Emails sent!");
+    res.status(200).json({ message: "Booking emails sent successfully!" });
   } catch (error) {
-    console.error("❌ Error sending booking emails via SendGrid:", error);
-    res.status(500).json({ message: "Failed to send booking emails ❌" });
+    console.error("❌ Error sending emails:", error);
+    
+
+    res.status(500).json({ message: "Failed to send booking emails" });
   }
 });
 
-// Health check
 app.get("/", (req, res) => {
   res.send("Server is running ✅");
 });
