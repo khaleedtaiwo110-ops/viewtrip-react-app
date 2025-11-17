@@ -45,7 +45,7 @@ export default function TrendingHotels() {
         adults: 1,
       });
 
-      const res = await fetch(`http://localhost:5000/api/hotels?${params}`);
+      const res = await fetch(`https://view-trip-travels-app.onrender.com/api/hotels?${params}`);
       const data = await res.json();
 
       const liveHotels = data?.data?.slice(0, 5) || [];

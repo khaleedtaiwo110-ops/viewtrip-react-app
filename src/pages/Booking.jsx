@@ -73,7 +73,7 @@ const Booking = () => {
     }
 
 try {
-  const res = await fetch("https://view-trip-travels-app.onrender.com/send-booking", {
+  const res = await fetch("https://view-trip-travels-app.onrender.com/api/send-booking", {
     method: "GET",
 
         headers: { "Content-Type": "application/json" },
