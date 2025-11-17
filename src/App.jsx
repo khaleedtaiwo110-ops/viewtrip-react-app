@@ -13,6 +13,7 @@ import FlightOffers from "./pages/FlightOffers";
 import BookingForm from "./components/BookingForm";
 import VisaSection from "./pages/visa";
 import Blog from "./pages/Blog";
+import TrendingHotels from "./pages/TrendingHotels";
 
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
           <Route path="/book" element={<BookingForm />} />
           <Route path="/visas" element={<VisaSection />} />
           <Route path="/blog" element={<Blog/>} />
+          <Route path="/Trendinghotels" element={<TrendingHotels/>} />
 
         </Routes>
       </main>

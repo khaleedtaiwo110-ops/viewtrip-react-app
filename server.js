@@ -80,6 +80,44 @@ app.get("/api/flight-offers", async (req, res) => {
   }
 });
 
+// ✅ FIXED HOTEL SEARCH API
+app.get("/api/hotels", async (req, res) => {
+  const { cityCode, checkInDate, checkOutDate, adults = 1 } = req.query;
+
+  if (!cityCode || !checkInDate || !checkOutDate) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    // ⭐ STEP 1: Get hotel IDs for the city
+    const hotelsRes = await amadeus.referenceData.locations.hotels.byCity.get({
+      cityCode,
+    });
+
+    const hotelIds = hotelsRes.data.map(h => h.hotelId).slice(0, 20); // take first 20 hotels
+
+    if (!hotelIds.length) {
+      return res.status(404).json({ error: "No hotels found in this city" });
+    }
+
+    // ⭐ STEP 2: Fetch offers using hotel IDs
+    const offersRes = await amadeus.shopping.hotelOffersSearch.get({
+      hotelIds: hotelIds.join(","),
+      checkInDate,
+      checkOutDate,
+      adults,
+      currency: "USD",
+    });
+
+    return res.json({ data: offersRes.data });
+
+  } catch (error) {
+    console.error("❌ FIXED HOTEL SEARCH ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+
 // ✅ Simulate Flight Booking
 app.post("/api/book-flight", async (req, res) => {
   const { flight, passenger } = req.body;
@@ -100,8 +138,8 @@ app.post("/api/book-flight", async (req, res) => {
 // Set SendGrid API key
 
 
-app.post("/api/send-booking", async (req, res) => {
-  const booking = req.body;
+app.get("/api/send-booking", async (req, res) => {
+  const booking = req.query;
   console.log("📩 New booking received:", booking);
 
   try {
