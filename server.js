@@ -186,7 +186,7 @@ app.get("/api/send-booking", async (req, res) => {
     console.log("✅ Emails sent!");
     res.status(200).json({ message: "Booking emails sent successfully!" });
   } catch (error) {
-    console.error("❌ Error sending emails:", error);
+    console.error("❌ Error sending emails.:", error);
     res.status(500).json({ message: "Failed to send booking emails" });
   }
 });
