@@ -13,8 +13,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import TrendingHotels from "./TrendingHotels";
 import Tours from "./Tours"
 import AdBanner from "../componentss/adsgoogle";
+import { useNavigate } from "react-router-dom";
+ 
+
 
 export default function Home() {
+  const navigate = useNavigate();
   const [tab, setTab] = useState("flights");
   const [tripType, setTripType] = useState("oneway");
   const [currentImage, setCurrentImage] = useState(0);
@@ -23,6 +27,9 @@ export default function Home() {
   const [flightResults, setFlightResults] = useState([]);
   const [hotelResults, setHotelResults] = useState([]);
   const [selectedFlight, setSelectedFlight] = useState(null);
+  const airlineLogoUrl = (code) =>
+  `https://content.airhex.com/content/logos/airlines_${code}.png`; // replace with working source
+
 
   // Flight + Hotel Form States
   const [flightForm, setFlightForm] = useState({
@@ -116,33 +123,36 @@ export default function Home() {
   };
 
   // === 🏨 Handle Hotel Search ===
-  const handleHotelSearch = async () => {
-    const { destination, checkInDate, checkOutDate, guests } = hotelForm;
-    if (!destination || !checkInDate || !checkOutDate) {
-      alert("Please fill in all hotel fields");
-      return;
-    }
-    setLoading(true);
-    try {
-      const res = await fetch("https://view-trip-travels-app.onrender.com/api/hotels", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          cityCode: destination.slice(0, 3).toUpperCase(),
-          checkInDate,
-          checkOutDate,
-          adults: guests,
-        }),
-      });
-      const data = await res.json();
-      setHotelResults(data.data || []);
-    } catch (e) {
-      console.error(e);
-      alert("Hotel search failed");
-    } finally {
-      setLoading(false);
-    }
-  };
+const handleHotelSearch = async () => {
+  const { destination, checkInDate, checkOutDate, guests } = hotelForm;
+  if (!destination || !checkInDate || !checkOutDate) {
+    alert("Please fill in all hotel fields");
+    return;
+  }
+  setLoading(true);
+  try {
+    // Build query string for GET request
+    const params = new URLSearchParams({
+      cityCode: destination.slice(0, 3).toUpperCase(),
+      checkInDate,
+      checkOutDate,
+      adults: guests,
+    });
+
+    const res = await fetch(`https://view-trip-travels-app.onrender.com/api/hotels?${params}`);
+
+    if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
+
+    const data = await res.json();
+    setHotelResults(data.data || []);
+  } catch (e) {
+    console.error("Hotel search error:", e);
+    alert("Hotel search failed. Check your city code or backend API.");
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   // === 🧾 Handle Booking Submit ===
   const handleBookFlight = async () => {
@@ -346,33 +356,66 @@ export default function Home() {
                 </button>
 
                 {/* ✈️ Display Flight Results */}
-                {flightResults.length > 0 && (
-                  <div className="grid gap-4 mt-8">
-                    {flightResults.map((offer, i) => (
-                      <div
-                        key={i}
-                        className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition"
-                      >
-                        <p className="font-semibold text-gray-800">
-                          {offer.itineraries[0].segments[0].departure.iataCode} →{" "}
-                          {offer.itineraries[0].segments.slice(-1)[0].arrival.iataCode}
-                        </p>
-                        <p className="text-sm text-gray-500">
-                          Duration: {offer.itineraries[0].duration.replace("PT", "")}
-                        </p>
-                        <p className="text-blue-600 font-bold mt-2">
-                          From ${offer.price.total}
-                        </p>
-                        <button
-                          onClick={() => setSelectedFlight(offer)}
-                          className="mt-3 bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition"
-                        >
-                          Book Now
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
+                {/* ✈️ Display Flight Results */}
+{flightResults.length > 0 && (
+  <div className="grid gap-4 mt-8">
+    {flightResults.map((offer, i) => {
+      const itineraries = offer.itineraries || [];
+      if (!itineraries.length) return null; // skip if no itinerary
+
+      // Collect all segments and airline codes
+      const segments = itineraries.flatMap((it) => it.segments || []);
+      if (!segments.length) return null;
+
+      const airlineCodes = [...new Set(segments.map((s) => s.carrierCode))]; // unique airlines
+
+      const firstSegment = segments[0];
+      const lastSegment = segments[segments.length - 1];
+
+      return (
+        <div
+          key={i}
+          className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition"
+        >
+          {/* Airlines Logos */}
+          <div className="flex items-center gap-2 mb-2">
+            {airlineCodes.map((code) => (
+              <img
+                key={code}
+                src={`https://content.airhex.com/content/logos/airlines_${code}.png`}
+                alt={code}
+                className="w-10 h-10 object-contain"
+                onError={(e) => (e.target.style.display = "none")}
+              />
+            ))}
+          </div>
+
+          {/* Route and Duration */}
+          <p className="font-semibold text-gray-800 mb-1">
+            {firstSegment.departure?.iataCode} → {lastSegment.arrival?.iataCode}
+          </p>
+          <p className="text-sm text-gray-500 mb-2">
+            Duration: {itineraries[0].duration?.replace("PT", "") || "N/A"}
+          </p>
+
+          {/* Price + Book Button */}
+          <div className="flex justify-between items-center">
+            <p className="text-blue-600 font-bold">
+              From ${offer.price?.total || "N/A"}
+            </p>
+            <button
+              onClick={() => setSelectedFlight(offer)}
+              className="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition"
+            >
+              Book Now
+            </button>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+)}
+
               </>
             ) : (
               <>
@@ -459,27 +502,55 @@ export default function Home() {
                 </button>
 
                 {hotelResults.length > 0 && (
-                  <div className="grid md:grid-cols-2 gap-6 mt-8">
-                    {hotelResults.map((h, i) => (
-                      <div
-                        key={i}
-                        className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition"
-                      >
-                        <h3 className="text-lg font-semibold text-gray-800">
-                          {h.hotel.name}
-                        </h3>
-                        <p className="text-sm text-gray-500">
-                          {h.hotel.address.cityName}, {h.hotel.address.countryCode}
-                        </p>
-                        {h.offers && h.offers[0] && (
-                          <p className="text-blue-600 font-bold mt-2">
-                            From ${h.offers[0].price.total}
-                          </p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
+  <div className="grid md:grid-cols-2 gap-6 mt-8">
+    {hotelResults.map((h, i) => (
+      <div
+        key={i}
+        className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition"
+      >
+        {/* Hotel Image */}
+        <img
+          src={h.hotel?.media?.[0]?.uri || "/images/default-hotel.jpg"}
+          alt={h.hotel?.name || "Hotel"}
+          className="w-full h-48 object-cover"
+        />
+
+        {/* Hotel Info */}
+        <div className="p-4">
+          <h3 className="text-lg font-semibold text-gray-800">
+            {h.hotel?.name || "Unknown Hotel"}
+          </h3>
+          <p className="text-sm text-gray-500">
+            {h.hotel?.address?.cityName || "City"}, {h.hotel?.address?.countryCode || "Country"}
+          </p>
+          {h.offers?.[0] && (
+            <p className="text-blue-600 font-bold mt-2">
+              From ${h.offers[0]?.price?.total || "N/A"}
+            </p>
+          )}
+
+          {/* Book Now Button */}
+          <button
+  onClick={() =>
+    navigate(
+      `/booking?hotel=${encodeURIComponent(h.hotel?.name || "")}&checkIn=${hotelForm.checkInDate}&checkOut=${hotelForm.checkOutDate}&guests=${hotelForm.guests}`
+    )
+  }
+  className="mt-3 w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition"
+>
+  Book Now
+</button>
+
+
+        </div>
+      </div>
+    ))}
+  </div>
+)}
+
+
+
+
               </>
             )}
           </div>
@@ -620,7 +691,7 @@ export default function Home() {
       </AnimatePresence>
       <AdBanner />
         {/* Trending Hotels Section */}
-      <TrendingHotels />
+      <TrendingHotels /> 
       {/* Tours section */}
       <AdBanner />
       <Tours/>

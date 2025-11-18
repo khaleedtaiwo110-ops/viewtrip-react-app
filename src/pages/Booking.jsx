@@ -1,21 +1,21 @@
-// Booking.jsx
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import AdBanner from "../componentss/adsgoogle";
 
 const Booking = () => {
+  const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
 
-  // Query params
+  // Preselected items
   const preselectedFlight = queryParams.get("flight") || "";
   const preselectedHotel = queryParams.get("hotel") || "";
   const preselectedTour = queryParams.get("tour") || "";
   const preselectedCountry = queryParams.get("country") || "";
 
-  // Booking type & item
+  // Booking type and item
   const [bookingType, setBookingType] = useState(""); // "flight" | "hotel" | "tour" | "visa"
-  const [itemName, setItemName] = useState(""); // Flight, hotel, tour or country
+  const [itemName, setItemName] = useState(""); // Flight, hotel, tour, or country
 
   // Common fields
   const [name, setName] = useState("");
@@ -34,69 +34,59 @@ const Booking = () => {
   const [travelers, setTravelers] = useState(1);
   const [specialRequests, setSpecialRequests] = useState("");
 
-  useEffect(() => {
+  useEffect(() => { 
     if (preselectedFlight) {
       setBookingType("flight");
       setItemName(preselectedFlight);
     } else if (preselectedHotel) {
       setBookingType("hotel");
       setItemName(preselectedHotel);
-    } else if (preselectedTour) {
-      setBookingType("tour");
-      setItemName(preselectedTour);
-    } else if (preselectedCountry) {
-      setBookingType("visa");
-      setItemName(preselectedCountry);
-    }
-  }, [preselectedFlight, preselectedHotel, preselectedTour, preselectedCountry]);
 
-  const handleSubmit = async (e) => {
+      // Auto-fill hotel details from query params
+      const checkInParam = queryParams.get("checkIn") || "";
+    const checkOutParam = queryParams.get("checkOut") || "";
+    const guestsParam = queryParams.get("guests") || 1;
+
+    setCheckIn(checkInParam);
+    setCheckOut(checkOutParam);
+    setGuests(guestsParam);
+  } else if (preselectedTour) {
+    setBookingType("tour");
+    setItemName(preselectedTour);
+  } else if (preselectedCountry) {
+    setBookingType("visa");
+    setItemName(preselectedCountry);
+  }
+}, [preselectedFlight, preselectedHotel, preselectedTour, preselectedCountry]);
+
+  const handleSubmit = (e) => {
     e.preventDefault();
-
     const info = { name, email, type: bookingType, itemName };
 
     if (bookingType === "flight") {
       info.passengers = passengers;
       info.travelClass = travelClass;
     }
+
     if (bookingType === "hotel") {
       info.checkIn = checkIn;
       info.checkOut = checkOut;
       info.guests = guests;
     }
+
     if (bookingType === "tour") {
       info.travelers = travelers;
       info.specialRequests = specialRequests;
     }
+
     if (bookingType === "visa") {
       info.country = itemName;
     }
 
-try {
-  const res = await fetch("https://view-trip-travels-app.onrender.com/api/send-booking", {
-    method: "GET",
-
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(info),
-      });
-      const data = await res.json();
-      alert(data.message);
-      // Reset form
-      setName("");
-      setEmail("");
-      setPassengers(1);
-      setTravelClass("ECONOMY");
-      setCheckIn("");
-      setCheckOut("");
-      setGuests(1);
-      setTravelers(1);
-      setSpecialRequests("");
-      setItemName("");
-      setBookingType("");
-    } catch (err) {
-      console.error("Booking send error:", err);
-      alert("Failed to send booking. Please try again.");
-    }
+    console.log("Booking Info:", info);
+    alert("Booking submitted! Check console for details.");
+    // Optionally, navigate back or send info to backend
+    // navigate("/");
   };
 
   return (
@@ -109,9 +99,7 @@ try {
             ? "Hotel Booking"
             : bookingType === "tour"
             ? "Tour Booking"
-            : bookingType === "visa"
-            ? "Visa Booking"
-            : "Booking"}
+            : "Visa Booking"}
         </h2>
 
         <form

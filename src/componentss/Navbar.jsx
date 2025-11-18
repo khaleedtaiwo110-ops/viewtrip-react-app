@@ -10,9 +10,9 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "Home", path: "/" },
-    { name: "Destinations", path: "/destinations" },
+    // { name: "Destinations", path: "/destinations" },
     { name: "Tours", path: "/tours" },
-    { name: "Gallery", path: "/gallery" },
+    // { name: "Gallery", path: "/gallery" },
     { name: "Testimonials", path: "/testimonials" },
     { name: "Contact", path: "/contact" },
     { name: "Search Flights", path: "/flight-offers" },
