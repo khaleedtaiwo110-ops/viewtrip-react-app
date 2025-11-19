@@ -1,21 +1,25 @@
+// Booking.jsx
 import React, { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import AdBanner from "../componentss/adsgoogle";
 
 const Booking = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
 
-  // Preselected items
+  // Query params
   const preselectedFlight = queryParams.get("flight") || "";
   const preselectedHotel = queryParams.get("hotel") || "";
+    // Auto-fill hotel details from query params
+      const checkInParam = queryParams.get("checkIn") || "";
+    const checkOutParam = queryParams.get("checkOut") || "";
+    const guestsParam = queryParams.get("guests") || 1;
   const preselectedTour = queryParams.get("tour") || "";
   const preselectedCountry = queryParams.get("country") || "";
 
-  // Booking type and item
-  const [bookingType, setBookingType] = useState(""); // "flight" | "hotel" | "tour" | "visa"
-  const [itemName, setItemName] = useState(""); // Flight, hotel, tour, or country
+  // Booking type & item
+  const [bookingType, setBookingType] = useState("");
+  const [itemName, setItemName] = useState("");
 
   // Common fields
   const [name, setName] = useState("");
@@ -34,33 +38,26 @@ const Booking = () => {
   const [travelers, setTravelers] = useState(1);
   const [specialRequests, setSpecialRequests] = useState("");
 
-  useEffect(() => { 
+  useEffect(() => {
     if (preselectedFlight) {
       setBookingType("flight");
       setItemName(preselectedFlight);
     } else if (preselectedHotel) {
       setBookingType("hotel");
       setItemName(preselectedHotel);
+    } else if (preselectedTour) {
+      setBookingType("tour");
+      setItemName(preselectedTour);
+    } else if (preselectedCountry) {
+      setBookingType("visa");
+      setItemName(preselectedCountry);
+    }
+  }, [preselectedFlight, preselectedHotel, preselectedTour, preselectedCountry]);
 
-      // Auto-fill hotel details from query params
-      const checkInParam = queryParams.get("checkIn") || "";
-    const checkOutParam = queryParams.get("checkOut") || "";
-    const guestsParam = queryParams.get("guests") || 1;
-
-    setCheckIn(checkInParam);
-    setCheckOut(checkOutParam);
-    setGuests(guestsParam);
-  } else if (preselectedTour) {
-    setBookingType("tour");
-    setItemName(preselectedTour);
-  } else if (preselectedCountry) {
-    setBookingType("visa");
-    setItemName(preselectedCountry);
-  }
-}, [preselectedFlight, preselectedHotel, preselectedTour, preselectedCountry]);
-
-  const handleSubmit = (e) => {
+  // 🚀 FIXED: BACKEND SUBMISSION
+  const handleSubmit = async (e) => {
     e.preventDefault();
+
     const info = { name, email, type: bookingType, itemName };
 
     if (bookingType === "flight") {
@@ -83,10 +80,28 @@ const Booking = () => {
       info.country = itemName;
     }
 
-    console.log("Booking Info:", info);
-    alert("Booking submitted! Check console for details.");
-    // Optionally, navigate back or send info to backend
-    // navigate("/");
+    try {
+
+      const query = new URLSearchParams(info).toString();
+      
+      const res = await fetch(
+
+      `https://view-trip-travels-app.onrender.com/api/send-booking?${query}`
+    );
+
+      const data = await res.json();
+      console.log("Booking Response:", data);
+
+      if (data.success) {
+        alert(`Booking submitted successfully! Your booking ID is: ${data.bookingId}`);
+      } else {
+        alert("Booking failed. Please try again.");
+      }
+
+    } catch (err) {
+      console.error("Booking error:", err);
+      alert("An error occurred while submitting your booking.");
+    }
   };
 
   return (
@@ -277,3 +292,4 @@ const Booking = () => {
 };
 
 export default Booking;
+ 

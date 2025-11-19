@@ -137,7 +137,7 @@ app.post("/api/book-flight", async (req, res) => {
 // ✅ 🆕 Send Booking Email + Confirmation to Customer
 
 app.get("/api/send-booking", async (req, res) => {
-  const booking = req.body;
+  const booking = req.query;
   console.log("📩 Booking received:", booking);
 
   try {
