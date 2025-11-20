@@ -94,7 +94,7 @@ const Booking = () => {
     if (data.success) {
       alert("Booking submitted successfully!");
     } else {
-      alert("Booking failed. Please try again.");
+      alert("Booking failed. Please try again..");
     }
 
   } catch (error) {
