@@ -136,8 +136,8 @@ app.post("/api/book-flight", async (req, res) => {
 
 // ✅ 🆕 Send Booking Email + Confirmation to Customer
 
-app.get("/api/send-booking", async (req, res) => {
-  const booking = req.query;
+app.post("/api/send-booking", async (req, res) => {
+  const booking = req.body;
   console.log("📩 Booking received:", booking);
 
   try {
@@ -181,7 +181,8 @@ app.get("/api/send-booking", async (req, res) => {
     await transporter.sendMail(adminMail);
     await transporter.sendMail(customerMail);
 
-    res.status(200).json({ message: "Booking emails sent successfully!" });
+    res.status(200).json({ success: true, message: "Booking emails sent successfully!" });
+
   } catch (error) {
     console.error("❌ Error:", error);
     res.status(500).json({ message: "Failed to send booking emails" });

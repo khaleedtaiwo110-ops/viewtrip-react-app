@@ -56,53 +56,52 @@ const Booking = () => {
 
   // 🚀 FIXED: BACKEND SUBMISSION
   const handleSubmit = async (e) => {
-    e.preventDefault();
+  e.preventDefault();
 
-    const info = { name, email, type: bookingType, itemName };
+  const info = { name, email, type: bookingType, itemName };
 
-    if (bookingType === "flight") {
-      info.passengers = passengers;
-      info.travelClass = travelClass;
+  if (bookingType === "flight") {
+    info.passengers = passengers;
+    info.travelClass = travelClass;
+  }
+
+  if (bookingType === "hotel") {
+    info.checkIn = checkIn;
+    info.checkOut = checkOut;
+    info.guests = guests;
+  }
+
+  if (bookingType === "tour") {
+    info.travelers = travelers;
+    info.specialRequests = specialRequests;
+  }
+
+  if (bookingType === "visa") {
+    info.country = itemName;
+  }
+
+  try {
+    const res = await fetch("https://view-trip-travels-app.onrender.com/api/send-booking", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(info),
+    });
+
+    const data = await res.json();   // 👈 THIS fixes your crash
+
+    console.log("Booking Response:", data);
+
+    if (data.success) {
+      alert("Booking submitted successfully!");
+    } else {
+      alert("Booking failed. Please try again.");
     }
 
-    if (bookingType === "hotel") {
-      info.checkIn = checkIn;
-      info.checkOut = checkOut;
-      info.guests = guests;
-    }
-
-    if (bookingType === "tour") {
-      info.travelers = travelers;
-      info.specialRequests = specialRequests;
-    }
-
-    if (bookingType === "visa") {
-      info.country = itemName;
-    }
-
-    try {
-
-      const query = new URLSearchParams(info).toString();
-      
-      const res = await fetch(
-
-      `https://view-trip-travels-app.onrender.com/api/send-booking?${query}`
-    );
-
-      const data = await res.json();
-      console.log("Booking Response:", data);
-
-      if (data.success) {
-        alert(`Booking submitted successfully! Your booking ID is: ${data.bookingId}`);
-      } else {
-        alert("Booking failed. Please try again.");
-      }
-
-    } catch (err) {
-      console.error("Booking error:", err);
-      alert("An error occurred while submitting your booking.");
-    }
-  };
+  } catch (error) {
+    console.error("Booking error:", error);
+    alert("Could not send booking. Check console.");
+  }
+};
 
   return (
     <section className="relative py-20 bg-linear-to-r from-blue-400 via-purple-500 to-pink-500 overflow-hidden">
