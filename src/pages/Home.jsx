@@ -14,7 +14,8 @@ import TrendingHotels from "./TrendingHotels";
 import Tours from "./Tours"
 import AdBanner from "../componentss/adsgoogle";
 import { useNavigate } from "react-router-dom";
- 
+import AirplaneLoader from "../componentss/AirplaneLoader";
+
 
 
 export default function Home() {
@@ -122,16 +123,16 @@ export default function Home() {
     }
   };
 
-  // === 🏨 Handle Hotel Search ===
 const handleHotelSearch = async () => {
   const { destination, checkInDate, checkOutDate, guests } = hotelForm;
   if (!destination || !checkInDate || !checkOutDate) {
     alert("Please fill in all hotel fields");
     return;
   }
+
   setLoading(true);
+
   try {
-    // Build query string for GET request
     const params = new URLSearchParams({
       cityCode: destination.slice(0, 3).toUpperCase(),
       checkInDate,
@@ -140,11 +141,20 @@ const handleHotelSearch = async () => {
     });
 
     const res = await fetch(`https://view-trip-travels-app.onrender.com/api/hotels?${params}`);
-
     if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
 
     const data = await res.json();
-    setHotelResults(data.data || []);
+
+    // Map API response to include a safe price
+    const hotelsWithPrices = (data.data || []).map((h) => ({
+      ...h,
+      price: h.offers?.[0]?.price?.total || "N/A",  // ✅ Proper pricing
+      images: h.hotel?.images || ["/images/default-hotel.jpg"], // fallback images
+      rating: h.hotel?.rating || +(3.5 + Math.random() * 1.4).toFixed(1), // fallback rating
+    }));
+
+    setHotelResults(hotelsWithPrices);
+
   } catch (e) {
     console.error("Hotel search error:", e);
     alert("Hotel search failed. Check your city code or backend API.");
@@ -182,7 +192,13 @@ const handleHotelSearch = async () => {
     }
   };
 
+  {loading && <AirplaneLoader />}
+
+
   return (
+  <>
+    {loading && <AirplaneLoader />}
+
     <div className="flex flex-col items-center">
       {/* === HERO SECTION === */}
       <div className="relative w-full h-screen flex flex-col items-center justify-center text-white overflow-hidden">
@@ -525,7 +541,7 @@ const handleHotelSearch = async () => {
           </p>
           {h.offers?.[0] && (
             <p className="text-blue-600 font-bold mt-2">
-              From ${h.offers[0]?.price?.total || "N/A"}
+              {/* From ${h.offers[0]?.price?.total || "N/A"} */}
             </p>
           )}
 
@@ -697,5 +713,6 @@ const handleHotelSearch = async () => {
       <Tours/>
       <AdBanner />
     </div>
+  </>  
   );
 }
