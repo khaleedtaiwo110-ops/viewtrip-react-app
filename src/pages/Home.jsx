@@ -693,9 +693,9 @@ const handleHotelSearch = async () => {
         {/* Trending Hotels Section */}
       <TrendingHotels /> 
       {/* Tours section */}
-      <AdBanner />
-      <Tours/>
+      <AdBanner /> 
       <AdventureActivities />
+      <Tours/>
       <AdBanner />
     </div>
   </>  

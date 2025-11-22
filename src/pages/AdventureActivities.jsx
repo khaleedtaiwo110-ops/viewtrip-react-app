@@ -7,7 +7,7 @@ const activities = [
     id: 1,
     title: "Mountain Hiking",
  
-    image: "public/images/hiking.webp",
+    image: "/images/hiking.webp",
     price: "$120",
     duration: "6 hours",
   },
@@ -15,7 +15,7 @@ const activities = [
     id: 2,
     title: "Paragliding",
  
-    image: "public/images/paragliding-wide.webp",
+    image: "/images/paragliding-wide.webp",
     price: "$200",
     duration: "3 hours",
   },
@@ -31,7 +31,7 @@ const activities = [
     id: 4,
     title: "Skiing",
  
-    image: " public/images/Ski_Famille_-_Family_Ski_Holidays.jpg",
+    image: "/images/Ski_Famille_-_Family_Ski_Holidays.jpg",
     price: "$400",
     duration: "2 hours",
   },
@@ -39,7 +39,7 @@ const activities = [
     id: 5,
     title: "Water Rafting",
  
-    image: "public/images/white-water-rafting_6afd0ee9-f184-49fc-ad68-d0b46afcd69c.webp",
+    image: "/images/white-water-rafting_6afd0ee9-f184-49fc-ad68-d0b46afcd69c.webp",
     price: "$400",
     duration: "2 hours",
   },
@@ -88,7 +88,7 @@ export default function AdventureActivities() {
         {activities.map((activity, i) => (
           <motion.div
   key={activity.id}
-  className="flex-shrink-0 w-[80%] sm:w-[45%] md:w-[35%] lg:w-[28%] rounded-xl overflow-hidden shadow-md hover:shadow-2xl hover:scale-[1.05] transition-transform duration-300 relative snap-center group"
+  className="shrink-0 w-[80%] sm:w-[45%] md:w-[35%] lg:w-[28%] rounded-xl overflow-hidden shadow-md hover:shadow-2xl hover:scale-[1.05] transition-transform duration-300 relative snap-center group"
   initial={{ opacity: 0, y: 50 }}
   whileInView={{ opacity: 1, y: 0 }}
   viewport={{ once: true }}
@@ -98,7 +98,7 @@ export default function AdventureActivities() {
   <img
     src={activity.image}
     alt={activity.title}
-    className="w-full h-80 md:h-96 lg:h-[28rem] object-cover"
+    className="w-full h-80 md:h-96 lg:h-112 object-cover"
   />
 
   {/* Overlay main */}
