@@ -15,6 +15,9 @@ import Tours from "./Tours"
 import AdBanner from "../componentss/adsgoogle";
 import { useNavigate } from "react-router-dom";
 import AirplaneLoader from "../componentss/AirplaneLoader";
+import { AirportSelector } from "./AirportSelector";
+import { PassengerSelector } from "./PassengerSelector";
+import AdventureActivities from "./AdventureActivities";
 
 
 
@@ -201,7 +204,8 @@ const handleHotelSearch = async () => {
 
     <div className="flex flex-col items-center">
       {/* === HERO SECTION === */}
-      <div className="relative w-full h-screen flex flex-col items-center justify-center text-white overflow-hidden">
+      <div className="relative w-full h-screen pt-36 flex flex-col items-center justify-center text-white overflow-hidden">
+
         <AnimatePresence mode="wait">
           <motion.div
             key={currentImage}
@@ -221,7 +225,7 @@ const handleHotelSearch = async () => {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
         {/* === MAIN BOOKING CARD === */}
-        <div className="relative z-10 w-full max-w-3xl px-6 py-8 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl">
+        <div className="relative z-10 w-full max-w-3xl px-6 py-8 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl transform -skew-y-3"> 
           <h1 className="text-center text-4xl font-bold mb-6 text-white">
             Plan Your Next Adventure
           </h1>
@@ -251,126 +255,107 @@ const handleHotelSearch = async () => {
           </div>
 
           {/* === FORMS === */}
-          <div className="space-y-6 text-black">
+          <div className="space-y-6 text-black transform skew-y-3"> 
             {tab === "flights" ? (
               <>
                 <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
                   <Plane /> Book a Flight
                 </h2>
-                <div className="flex gap-4 mb-4 text-white justify-center">
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={tripType === "oneway"}
-                      onChange={() => setTripType("oneway")}
-                    />
-                    One-way
-                  </label>
-                  <label className="flex items-center gap-2 cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={tripType === "round"}
-                      onChange={() => setTripType("round")}
-                    />
-                    Round-trip
-                  </label>
-                </div>
+                {/* Trip Type Selector */}
+<div className="flex justify-center gap-4 mb-4">
+  {["oneway", "round"].map((type) => (
+    <label
+      key={type}
+      className={`cursor-pointer px-4 py-2 rounded-xl font-medium transition 
+        ${tripType === type ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-blue-50"}`}
+    >
+      <input
+        type="radio"
+        value={type}
+        checked={tripType === type}
+        onChange={() => setTripType(type)}
+        className="hidden"
+      />
+      {type === "oneway" ? "One-way" : "Round-trip"}
+    </label>
+  ))}
+</div>
 
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="input-box">
-                    <MapPin className="icon" />
-                    <input
-                      placeholder="From (City Code e.g. LOS)"
-                      value={flightForm.origin}
-                      onChange={(e) =>
-                        setFlightForm({
-                          ...flightForm,
-                          origin: e.target.value.toUpperCase(),
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="input-box">
-                    <MapPin className="icon" />
-                    <input
-                      placeholder="To (City Code e.g. DXB)"
-                      value={flightForm.destination}
-                      onChange={(e) =>
-                        setFlightForm({
-                          ...flightForm,
-                          destination: e.target.value.toUpperCase(),
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="input-box">
-                    <Calendar className="icon" />
-                    <input
-                      type="date"
-                      value={flightForm.date}
-                      onChange={(e) =>
-                        setFlightForm({ ...flightForm, date: e.target.value })
-                      }
-                    />
-                  </div>
-                  {tripType === "round" && (
-                    <div className="input-box">
-                      <Calendar className="icon" />
-                      <input
-                        type="date"
-                        value={flightForm.returnDate}
-                        onChange={(e) =>
-                          setFlightForm({
-                            ...flightForm,
-                            returnDate: e.target.value,
-                          })
-                        }
-                      />
-                    </div>
-                  )}
-                  <select
-                    className="input-select"
-                    value={flightForm.travelClass}
-                    onChange={(e) =>
-                      setFlightForm({
-                        ...flightForm,
-                        travelClass: e.target.value,
-                      })
-                    }
-                  >
-                    <option value="ECONOMY">Economy</option>
-                    <option value="BUSINESS">Business</option>
-                    <option value="FIRST">First</option>
-                  </select>
-                  <div className="input-box">
-                    <Users className="icon" />
-                    <input
-                      type="number"
-                      min="1"
-                      value={flightForm.passengers}
-                      onChange={(e) =>
-                        setFlightForm({
-                          ...flightForm,
-                          passengers: e.target.value,
-                        })
-                      }
-                      placeholder="Passengers"
-                    />
-                  </div>
-                </div>
+                {/* === FULL FLIGHT FORM === */}     
+                <div className="bg-white rounded-3xl shadow-xl p-6 mt-6">
+  <div className="flex flex-wrap items-center justify-between border rounded-2xl overflow-hidden">
 
-                <button
-                  className="btn-primary w-full flex justify-center items-center gap-2 mt-4"
-                  onClick={handleFlightSearch}
-                  disabled={loading}
-                >
-                  {loading ? "Searching..." : (
-                    <>
-                      <ArrowLeftRight className="w-5 h-5" /> Search Flights
-                    </>
-                  )}
-                </button>
+    <div className="flex-1 min-w-[220px] p-4 border-r">
+      <AirportSelector
+        label="From"
+        value={flightForm.origin}
+        placeholder="LOS"
+        onChange={(iata, labelText) => setFlightForm({...flightForm, origin: iata, originLabel: labelText})}
+        airportsUrl="/airports.json"  /* <-- ensure airports.json is public */
+      />
+      <p className="text-sm text-gray-400">{flightForm.originLabel || ""}</p>
+    </div>
 
+    <div className="p-4 flex items-center justify-center border-r">
+      <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+        <ArrowLeftRight className="w-5 h-5 text-blue-600" />
+      </div>
+    </div>
+
+    <div className="flex-1 min-w-[220px] p-4 border-r">
+      <AirportSelector
+        label="To"
+        value={flightForm.destination}
+        placeholder="DXB"
+        onChange={(iata, labelText) => setFlightForm({...flightForm, destination: iata, destinationLabel: labelText})}
+        airportsUrl="/airports.json"
+      />
+      <p className="text-sm text-gray-400">{flightForm.destinationLabel || ""}</p>
+    </div>
+
+    <div className="flex-1 min-w-[180px] p-4 border-r">
+      <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Departure</p>
+      <input
+        type="date"
+        value={flightForm.date}
+        onChange={(e) => setFlightForm({ ...flightForm, date: e.target.value })}
+        className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
+      />
+      <p className="text-sm text-gray-400">{flightForm.date ? new Date(flightForm.date).toDateString() : ""}</p>
+    </div>
+
+    {tripType === "round" && (
+      <div className="flex-1 min-w-[180px] p-4 border-r">
+        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Return</p>
+        <input
+          type="date"
+          value={flightForm.returnDate}
+          onChange={(e) => setFlightForm({ ...flightForm, returnDate: e.target.value })}
+          className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
+        />
+        <p className="text-sm text-gray-400">{flightForm.returnDate ? new Date(flightForm.returnDate).toDateString() : ""}</p>
+      </div>
+    )}
+
+    <div className="flex-1 min-w-[150px] p-4">
+      <PassengerSelector
+        value={flightForm.passengers}
+        onChange={(v) => setFlightForm({...flightForm, passengers: v})}
+      />
+      <p className="text-sm text-gray-400">1 Traveller</p>
+    </div>
+
+  </div>
+
+  <div className="flex justify-center mt-6">
+    <button
+      className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-10 py-4 rounded-full text-lg shadow-lg"
+      onClick={handleFlightSearch}
+    >
+      SEARCH
+    </button>
+  </div>
+</div>
                 {/* ✈️ Display Flight Results */}
                 {/* ✈️ Display Flight Results */}
 {flightResults.length > 0 && (
@@ -436,86 +421,85 @@ const handleHotelSearch = async () => {
             ) : (
               <>
                 {/* 🏨 Hotel Form */}
-                <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
-                  <BedDouble /> Find a Hotel
-                </h2>
-                <div className="grid md:grid-cols-2 gap-4">
-                  <div className="input-box md:col-span-2">
-                    <MapPin className="icon" />
-                    <input
-                      placeholder="Destination (City Code e.g. PAR)"
-                      value={hotelForm.destination}
-                      onChange={(e) =>
-                        setHotelForm({
-                          ...hotelForm,
-                          destination: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="input-box">
-                    <Calendar className="icon" />
-                    <input
-                      type="date"
-                      value={hotelForm.checkInDate}
-                      onChange={(e) =>
-                        setHotelForm({
-                          ...hotelForm,
-                          checkInDate: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="input-box">
-                    <Calendar className="icon" />
-                    <input
-                      type="date"
-                      value={hotelForm.checkOutDate}
-                      onChange={(e) =>
-                        setHotelForm({
-                          ...hotelForm,
-                          checkOutDate: e.target.value,
-                        })
-                      }
-                    />
-                  </div>
-                  <div className="input-box">
-                    <Users className="icon" />
-                    <input
-                      type="number"
-                      min="1"
-                      value={hotelForm.guests}
-                      onChange={(e) =>
-                        setHotelForm({ ...hotelForm, guests: e.target.value })
-                      }
-                      placeholder="Guests"
-                    />
-                  </div>
-                  <div className="input-box">
-                    <Briefcase className="icon" />
-                    <input
-                      type="number"
-                      min="1"
-                      value={hotelForm.rooms}
-                      onChange={(e) =>
-                        setHotelForm({ ...hotelForm, rooms: e.target.value })
-                      }
-                      placeholder="Rooms"
-                    />
-                  </div>
-                </div>
+                {/* === WAKANOW STYLE HOTEL FORM === */}
+<div className="bg-white rounded-3xl shadow-xl p-6 mt-6">
 
-                <button
-                  className="btn-primary w-full flex justify-center items-center gap-2 mt-4"
-                  onClick={handleHotelSearch}
-                  disabled={loading}
-                >
-                  {loading ? "Searching..." : (
-                    <>
-                      <ArrowLeftRight className="w-5 h-5" /> Search Hotels
-                    </>
-                  )}
-                </button>
+  <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+    <BedDouble className="text-blue-600" /> Find a Hotel
+  </h2>
+
+  <div className="flex flex-wrap items-center justify-between border rounded-2xl overflow-hidden">
+
+    {/* DESTINATION */}
+    <div className="flex-1 min-w-[260px] p-4 border-r">
+      <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Destination</p>
+      <input
+        placeholder="City (e.g. Dubai)"
+        value={hotelForm.destination}
+        onChange={(e) => setHotelForm({ ...hotelForm, destination: e.target.value })}
+        className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
+      />
+      <p className="text-sm text-gray-400">Where do you want to stay?</p>
+    </div>
+
+    {/* CHECK-IN DATE */}
+    <div className="flex-1 min-w-[200px] p-4 border-r">
+      <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Check-in</p>
+      <input
+        type="date"
+        value={hotelForm.checkInDate}
+        onChange={(e) => setHotelForm({ ...hotelForm, checkInDate: e.target.value })}
+        className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
+      />
+      <p className="text-sm text-gray-400">
+        {hotelForm.checkInDate ? new Date(hotelForm.checkInDate).toDateString() : ""}
+      </p>
+    </div>
+
+    {/* CHECK-OUT DATE */}
+    <div className="flex-1 min-w-[200px] p-4 border-r">
+      <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Check-out</p>
+      <input
+        type="date"
+        value={hotelForm.checkOutDate}
+        onChange={(e) => setHotelForm({ ...hotelForm, checkOutDate: e.target.value })}
+        className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
+      />
+      <p className="text-sm text-gray-400">
+        {hotelForm.checkOutDate ? new Date(hotelForm.checkOutDate).toDateString() : ""}
+      </p>
+    </div>
+
+    {/* GUESTS */}
+    <div className="flex-1 min-w-[160px] p-4 border-r">
+      <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Guests</p>
+      <div className="text-2xl font-bold text-gray-900">
+        {hotelForm.guests} {hotelForm.guests > 1 ? "Guests" : "Guest"}
+      </div>
+      <p className="text-sm text-gray-400">Adults only</p>
+    </div>
+
+    {/* ROOMS */}
+    <div className="flex-1 min-w-[160px] p-4">
+      <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Rooms</p>
+      <div className="text-2xl font-bold text-gray-900">
+        {hotelForm.rooms} {hotelForm.rooms > 1 ? "Rooms" : "Room"}
+      </div>
+      <p className="text-sm text-gray-400">Total rooms</p>
+    </div>
+
+  </div>
+
+  {/* SEARCH BUTTON */}
+  <div className="flex justify-center mt-6">
+    <button
+      className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-10 py-4 rounded-full text-lg shadow-lg"
+      onClick={handleHotelSearch}
+    >
+      SEARCH HOTELS
+    </button>
+  </div>
+</div>
 
                 {hotelResults.length > 0 && (
   <div className="grid md:grid-cols-2 gap-6 mt-8">
@@ -711,6 +695,7 @@ const handleHotelSearch = async () => {
       {/* Tours section */}
       <AdBanner />
       <Tours/>
+      <AdventureActivities />
       <AdBanner />
     </div>
   </>  
