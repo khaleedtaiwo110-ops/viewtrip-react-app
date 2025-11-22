@@ -51,7 +51,7 @@ const genAmenities = () => {
 };
 
 // default fallback image
-const DEFAULT_IMG = "public/images/hotel4.webp ";
+const DEFAULT_IMG = "/images/hotel4.webp ";
 
 // format dates (yyyy-mm-dd)
 const isoDate = (d = new Date()) => d.toISOString().split("T")[0];
