@@ -23,6 +23,7 @@
     "framer-motion": "^12.23.24",
     "lucide-react": "^0.548.0",
     "nodemailer": "^7.0.10",
+    "react-countup": "^6.5.3",
     "react-router-dom": "^7.9.5"
   },
   "devDependencies": {

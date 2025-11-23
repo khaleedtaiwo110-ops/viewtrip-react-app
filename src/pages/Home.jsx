@@ -18,6 +18,7 @@ import AirplaneLoader from "../componentss/AirplaneLoader";
 import { AirportSelector } from "./AirportSelector";
 import { PassengerSelector } from "./PassengerSelector";
 import AdventureActivities from "./AdventureActivities";
+import WhyBookWithUs from "./WhyBookWithUs";
 
 
 
@@ -225,9 +226,9 @@ const handleHotelSearch = async () => {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
         {/* === MAIN BOOKING CARD === */}
-        <div className="relative z-10 w-full max-w-3xl px-6 py-8 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl transform -skew-y-3"> 
+        <div className="relative z-10 w-full h-screen px-6 py-8 backdrop-blur-lg"> 
           <h1 className="text-center text-4xl font-bold mb-6 text-white">
-            Plan Your Next Adventure
+            Find Your Best Holiday
           </h1>
 
           {/* Tabs */}
@@ -255,7 +256,7 @@ const handleHotelSearch = async () => {
           </div>
 
           {/* === FORMS === */}
-          <div className="space-y-6 text-black transform skew-y-3"> 
+          <div className="space-y-6 text-black w-full h-full overflow-auto"> 
             {tab === "flights" ? (
               <>
                 <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
@@ -689,14 +690,15 @@ const handleHotelSearch = async () => {
           </motion.div>
         )}
       </AnimatePresence>
-      <AdBanner />
+ 
+      <WhyBookWithUs /> 
         {/* Trending Hotels Section */}
       <TrendingHotels /> 
       {/* Tours section */}
-      <AdBanner /> 
+  
       <AdventureActivities />
       <Tours/>
-      <AdBanner />
+ 
     </div>
   </>  
   );
