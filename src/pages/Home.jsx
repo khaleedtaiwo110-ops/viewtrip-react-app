@@ -205,7 +205,7 @@ const handleHotelSearch = async () => {
 
     <div className="flex flex-col items-center">
       {/* === HERO SECTION === */}
-      <div className="relative w-full h-screen pt-36 flex flex-col items-center justify-center text-white overflow-hidden">
+      <div className="relative w-full h-screen pt-36 flex flex-col items-center justify-center text-white overflow-hidden ">
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -226,7 +226,7 @@ const handleHotelSearch = async () => {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
         {/* === MAIN BOOKING CARD === */}
-        <div className="relative z-10 w-full h-screen px-6 py-8 backdrop-blur-lg"> 
+        <div className="relative z-10 w-full min-h-screen px-6 py-8 backdrop-blur-lg overflow-y-auto"> 
           <h1 className="text-center text-4xl font-bold mb-6 text-white">
             Find Your Best Holiday
           </h1>
@@ -283,8 +283,8 @@ const handleHotelSearch = async () => {
 </div>
 
                 {/* === FULL FLIGHT FORM === */}     
-                <div className="bg-white rounded-3xl shadow-xl p-6 mt-6">
-  <div className="flex flex-wrap items-center justify-between border rounded-2xl overflow-hidden">
+<div className="bg-white rounded-3xl shadow-xl p-6 mt-6">
+  <div className="flex flex-wrap items-center justify-between border rounded-2xl">
 
     <div className="flex-1 min-w-[220px] p-4 border-r">
       <AirportSelector
@@ -292,7 +292,7 @@ const handleHotelSearch = async () => {
         value={flightForm.origin}
         placeholder="LOS"
         onChange={(iata, labelText) => setFlightForm({...flightForm, origin: iata, originLabel: labelText})}
-        airportsUrl="/airports.json"  /* <-- ensure airports.json is public */
+        airportsUrl="/airports.json"
       />
       <p className="text-sm text-gray-400">{flightForm.originLabel || ""}</p>
     </div>
@@ -308,7 +308,9 @@ const handleHotelSearch = async () => {
         label="To"
         value={flightForm.destination}
         placeholder="DXB"
-        onChange={(iata, labelText) => setFlightForm({...flightForm, destination: iata, destinationLabel: labelText})}
+        onChange={(iata, labelText) =>
+          setFlightForm({ ...flightForm, destination: iata, destinationLabel: labelText })
+        }
         airportsUrl="/airports.json"
       />
       <p className="text-sm text-gray-400">{flightForm.destinationLabel || ""}</p>
@@ -322,7 +324,9 @@ const handleHotelSearch = async () => {
         onChange={(e) => setFlightForm({ ...flightForm, date: e.target.value })}
         className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
       />
-      <p className="text-sm text-gray-400">{flightForm.date ? new Date(flightForm.date).toDateString() : ""}</p>
+      <p className="text-sm text-gray-400">
+        {flightForm.date ? new Date(flightForm.date).toDateString() : ""}
+      </p>
     </div>
 
     {tripType === "round" && (
@@ -331,19 +335,40 @@ const handleHotelSearch = async () => {
         <input
           type="date"
           value={flightForm.returnDate}
-          onChange={(e) => setFlightForm({ ...flightForm, returnDate: e.target.value })}
+          onChange={(e) =>
+            setFlightForm({ ...flightForm, returnDate: e.target.value })
+          }
           className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
         />
-        <p className="text-sm text-gray-400">{flightForm.returnDate ? new Date(flightForm.returnDate).toDateString() : ""}</p>
+        <p className="text-sm text-gray-400">
+          {flightForm.returnDate ? new Date(flightForm.returnDate).toDateString() : ""}
+        </p>
       </div>
     )}
 
-    <div className="flex-1 min-w-[150px] p-4">
+    <div className="flex-1 min-w-[150px] p-4 border-r">
       <PassengerSelector
         value={flightForm.passengers}
-        onChange={(v) => setFlightForm({...flightForm, passengers: v})}
+        onChange={(v) => setFlightForm({ ...flightForm, passengers: v })}
       />
       <p className="text-sm text-gray-400">1 Traveller</p>
+    </div>
+
+    {/* ⭐ NEW — TRAVEL CLASS SELECTOR */}
+    <div className="flex-1 min-w-[180px] p-4">
+      <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Class</p>
+      <select
+        value={flightForm.travelClass}
+        onChange={(e) =>
+          setFlightForm({ ...flightForm, travelClass: e.target.value })
+        }
+        className="text-lg font-bold text-gray-900 w-full bg-transparent outline-none"
+      >
+        <option value="ECONOMY">Economy</option>
+        <option value="PREMIUM_ECONOMY">Premium Economy</option>
+        <option value="BUSINESS">Business</option>
+        <option value="FIRST">First</option>
+      </select>
     </div>
 
   </div>
@@ -357,20 +382,18 @@ const handleHotelSearch = async () => {
     </button>
   </div>
 </div>
-                {/* ✈️ Display Flight Results */}
+
                 {/* ✈️ Display Flight Results */}
 {flightResults.length > 0 && (
   <div className="grid gap-4 mt-8">
     {flightResults.map((offer, i) => {
       const itineraries = offer.itineraries || [];
-      if (!itineraries.length) return null; // skip if no itinerary
+      if (!itineraries.length) return null;
 
-      // Collect all segments and airline codes
       const segments = itineraries.flatMap((it) => it.segments || []);
       if (!segments.length) return null;
 
-      const airlineCodes = [...new Set(segments.map((s) => s.carrierCode))]; // unique airlines
-
+      const airlineCodes = [...new Set(segments.map((s) => s.carrierCode))];
       const firstSegment = segments[0];
       const lastSegment = segments[segments.length - 1];
 
@@ -379,28 +402,34 @@ const handleHotelSearch = async () => {
           key={i}
           className="bg-white rounded-2xl p-4 shadow-lg hover:shadow-xl transition"
         >
-          {/* Airlines Logos */}
-          <div className="flex items-center gap-2 mb-2">
-            {airlineCodes.map((code) => (
+          {/* Airline Logo */}
+          {airlineCodes[0] && (
+            <div className="flex items-center gap-3 my-4 justify-center">
               <img
-                key={code}
-                src={`https://content.airhex.com/content/logos/airlines_${code}.png`}
-                alt={code}
-                className="w-10 h-10 object-contain"
+                src={`https://content.airhex.com/content/logos/airlines/${airlineCodes[0]}.svg`}
+                alt="Airline Logo"
+                className="w-12 h-12 object-contain bg-gray-100 rounded-full p-2 shadow"
                 onError={(e) => (e.target.style.display = "none")}
               />
+              <p className="text-lg font-semibold text-gray-700">{airlineCodes[0]}</p>
+            </div>
+          )}
+
+          {/* Full Itinerary */}
+          <div className="text-gray-700 mb-2">
+            {segments.map((seg, idx) => (
+              <p key={idx} className="text-sm">
+                {seg.departure.iataCode} → {seg.arrival.iataCode} | {seg.carrierCode}
+              </p>
             ))}
           </div>
 
-          {/* Route and Duration */}
-          <p className="font-semibold text-gray-800 mb-1">
-            {firstSegment.departure?.iataCode} → {lastSegment.arrival?.iataCode}
-          </p>
+          {/* Duration */}
           <p className="text-sm text-gray-500 mb-2">
             Duration: {itineraries[0].duration?.replace("PT", "") || "N/A"}
           </p>
 
-          {/* Price + Book Button */}
+          {/* Price + Book */}
           <div className="flex justify-between items-center">
             <p className="text-blue-600 font-bold">
               From ${offer.price?.total || "N/A"}
@@ -472,7 +501,7 @@ const handleHotelSearch = async () => {
     </div>
 
     {/* GUESTS */}
-    <div className="flex-1 min-w-[160px] p-4 border-r">
+    <div className="flex-1 min-w-40 p-4 border-r">
       <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Guests</p>
       <div className="text-2xl font-bold text-gray-900">
         {hotelForm.guests} {hotelForm.guests > 1 ? "Guests" : "Guest"}
@@ -481,7 +510,7 @@ const handleHotelSearch = async () => {
     </div>
 
     {/* ROOMS */}
-    <div className="flex-1 min-w-[160px] p-4">
+    <div className="flex-1 min-w-40 p-4">
       <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Rooms</p>
       <div className="text-2xl font-bold text-gray-900">
         {hotelForm.rooms} {hotelForm.rooms > 1 ? "Rooms" : "Room"}
