@@ -35,6 +35,11 @@ const Footer = () => {
             <li><Link to="/tours" className="hover:text-white">Tours</Link></li>
             <li><Link to="/gallery" className="hover:text-white">Gallery</Link></li>
             <li><Link to="/booking" className="hover:text-white">Booking</Link></li>
+              <a href="/privacy-policy" className="block hover:text-white">Privacy Policy</a>
+  <a href="/terms" className="block hover:text-white">Terms & Conditions</a>
+  <a href="/about-us" className="block hover:text-white">About Us</a>
+ 
+  <a href="/disclaimer" className="block hover:text-white">Disclaimer</a>
           </ul>
         </div>
 
@@ -57,11 +62,59 @@ const Footer = () => {
           </ul>
         </div>
       </div>
+      <div className="mt-4 space-y-2">
+
+</div>
+{/* 🌍 Accreditation Logos – Styled */}
+<div className="w-full mt-10  justify-center">
+  <div className="backdrop-blur-md  border border-white/10  p-6 flex flex-wrap items-center justify-center gap-10 ">
+    
+    {/* IATA */}
+    <div className="flex flex-col items-center group">
+      <img
+        src="/images/logo/iata.png"
+        alt="IATA"
+        className="h-12 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 drop-shadow-lg"
+      />
+      <p className="text-gray-400 text-xs mt-2 group-hover:text-white transition">
+        IATA Accredited
+      </p>
+    </div>
+
+    {/* NANTA */}
+    <div className="flex flex-col items-center group">
+      <img
+        src=" /images/logo/nanta.png"
+        alt="NANTA"
+        className="h-12 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 drop-shadow-lg"
+      />
+      <p className="text-gray-400 text-xs mt-2 group-hover:text-white transition">
+        NANTA Certified
+      </p>
+    </div>
+
+    {/* NCAA */}
+    <div className="flex flex-col items-center group">
+      <img
+        src=" /images/logo/ncaa.png"
+        alt="NCAA"
+        className="h-12 object-contain opacity-90 group-hover:opacity-100 group-hover:scale-110 transition-all duration-300 drop-shadow-lg"
+      />
+      <p className="text-gray-400 text-xs mt-2 group-hover:text-white transition">
+        NCAA Approved
+      </p>
+    </div>
+
+  </div>
+</div>
+
+
 
       {/* 🧾 Bottom Bar */}
       <div className="border-t border-gray-700 py-4 text-center text-sm text-gray-400">
         © {new Date().getFullYear()} ViewTrip. All rights reserved.
       </div>
+
     </footer>
   );
 };

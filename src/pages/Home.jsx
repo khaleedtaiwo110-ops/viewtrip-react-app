@@ -33,7 +33,8 @@ export default function Home() {
   const [hotelResults, setHotelResults] = useState([]);
   const [selectedFlight, setSelectedFlight] = useState(null);
   const airlineLogoUrl = (code) =>
-  `https://content.airhex.com/content/logos/airlines_${code}.png`; // replace with working source
+  `https://content.airlinecodes.co.uk/logos/${code.toUpperCase()}.png` || 
+  "https://via.placeholder.com/50x50?text=Logo";
 
 
   // Flight + Hotel Form States
@@ -78,11 +79,11 @@ export default function Home() {
       title: "Bali, Indonesia",
     },
     {
-      img: "hotel8.jpg",
+      img: " /images/hotel8.jpg ",
       title: "Dubai, UAE",
     },
     {
-      img: "hotel6.avif",
+      img: " /images/hotel7.avif ",
       title: "Lagos, Nigeria",
     },
   ];
@@ -226,7 +227,7 @@ const handleHotelSearch = async () => {
         <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
 
         {/* === MAIN BOOKING CARD === */}
-        <div className="relative z-10 w-full min-h-screen px-6 py-8 backdrop-blur-lg overflow-y-auto"> 
+        <div className="relative z-10 w-full min-h-screen px-6 py-8 overflow-y-auto"> 
           <h1 className="text-center text-4xl font-bold mb-6 text-white">
             Find Your Best Holiday
           </h1>

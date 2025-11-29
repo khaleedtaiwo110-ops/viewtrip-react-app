@@ -14,6 +14,10 @@ import BookingForm from "./components/BookingForm";
 import VisaSection from "./pages/visa";
 import Blog from "./pages/Blog";
 import TrendingHotels from "./pages/TrendingHotels";
+import AboutUs from "./pages/AboutUs";
+import Disclaimer from "./pages/Disclaimer";
+import PrivacyPolicy from "./pages/PrivacyPolicy";
+import TermsAndConditions from "./pages/TermsAndConditions";
 
 
 function App() {
@@ -34,6 +38,11 @@ function App() {
           <Route path="/visas" element={<VisaSection />} />
           <Route path="/blog" element={<Blog/>} />
           <Route path="/Trendinghotels" element={<TrendingHotels/>} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsAndConditions />} />
+         <Route path="/about-us" element={<AboutUs />} />
+ 
+         <Route path="/disclaimer" element={<Disclaimer />} />
 
         </Routes>
       </main>
