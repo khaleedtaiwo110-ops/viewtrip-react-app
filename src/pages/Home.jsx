@@ -436,11 +436,14 @@ const handleHotelSearch = async () => {
               From ${offer.price?.total || "N/A"}
             </p>
             <button
-              onClick={() => setSelectedFlight(offer)}
-              className="bg-blue-600 text-white rounded-lg px-4 py-2 hover:bg-blue-700 transition"
-            >
-              Book Now
-            </button>
+  onClick={() => {
+    navigate(`/booking?flight=${encodeURIComponent(selectedFlight.validatingAirlineCodes[0] + " " + selectedFlight.itineraries[0].segments[0].departure.iataCode + " → " + selectedFlight.itineraries[0].segments.slice(-1)[0].arrival.iataCode)}`);
+  }}
+  className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg font-semibold transition"
+>
+  Book Now
+</button>
+
           </div>
         </div>
       );

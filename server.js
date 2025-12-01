@@ -142,20 +142,22 @@ app.post("/api/send-booking", async (req, res) => {
 
   try {
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.mailchannels.net",
+      port: 25,
+      secure: false,
       auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
+        user: "apikey",
+        pass: "apikey",
       },
     });
 
-    // Email to Admin
+    // === ADMIN EMAIL ===
     const adminMail = {
-      from: `"ViewTrip Travels" <${process.env.EMAIL_USER}>`,
-      to: process.env.EMAIL_RECEIVER || process.env.EMAIL_USER,
+      from: `ViewTrip Travels <no-reply@viewtriptravels.com>`,
+      to: "khaleedtaiwo110@gmail.com",
       subject: `🧳 New ${booking.type?.toUpperCase()} Booking from ${booking.name}`,
       html: `
-        <h2>New Booking Details</h2>
+        <h2>New Booking Received</h2>
         <p><b>Name:</b> ${booking.name}</p>
         <p><b>Email:</b> ${booking.email}</p>
         <p><b>Type:</b> ${booking.type}</p>
@@ -163,18 +165,19 @@ app.post("/api/send-booking", async (req, res) => {
       `,
     };
 
-    // Email to Customer
+    // === CUSTOMER EMAIL ===
     const customerMail = {
-      from: `"ViewTrip Travels" <${process.env.EMAIL_USER}>`,
+      from: `ViewTrip Travels <no-reply@viewtriptravels.com>`,
       to: booking.email,
       subject: `✅ Booking Confirmation - ViewTrip Travels`,
       html: `
         <h2>Dear ${booking.name},</h2>
-        <p>Thank you for booking your ${booking.type} with <b>ViewTrip Travels</b>!</p>
-        <p>We’ve received your booking for <b>${booking.itemName}</b>.</p>
-        <p>Our team will contact you shortly.</p>
+        <p>Thank you for booking your <b>${booking.type}</b> with <b>ViewTrip Travels</b>!</p>
+        <p>We have received your request for:</p>
+        <p><b>${booking.itemName}</b></p>
+        <p>Our team will reach out shortly.</p>
         <br/>
-        <p><b>Warm regards,</b><br/>ViewTrip Travels</p>
+        <p>Warm regards,<br/>ViewTrip Travels Team</p>
       `,
     };
 
@@ -184,7 +187,7 @@ app.post("/api/send-booking", async (req, res) => {
     res.status(200).json({ success: true, message: "Booking emails sent successfully!" });
 
   } catch (error) {
-    console.error("❌ Error:", error);
+    console.error("❌ Email Error:", error);
     res.status(500).json({ message: "Failed to send booking emails" });
   }
 });
