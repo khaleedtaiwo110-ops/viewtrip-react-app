@@ -1,0 +1,188 @@
+[
+  {
+    "city": "Lagos",
+    "airport": "Murtala Muhammed International",
+    "iata": "LOS",
+    "country": "NG"
+  },
+  {
+    "city": "Abuja",
+    "airport": "Nnamdi Azikiwe International",
+    "iata": "ABV",
+    "country": "NG"
+  },
+  {
+    "city": "Port Harcourt",
+    "airport": "Port Harcourt International",
+    "iata": "PHC",
+    "country": "NG"
+  },
+  {
+    "city": "Kano",
+    "airport": "Aminu Kano International",
+    "iata": "KAN",
+    "country": "NG"
+  },
+  {
+    "city": "London",
+    "airport": "Heathrow",
+    "iata": "LHR",
+    "country": "GB"
+  },
+  {
+    "city": "Manchester",
+    "airport": "Manchester Airport",
+    "iata": "MAN",
+    "country": "GB"
+  },
+  {
+    "city": "Dubai",
+    "airport": "Dubai International",
+    "iata": "DXB",
+    "country": "AE"
+  },
+  {
+    "city": "Doha",
+    "airport": "Hamad International",
+    "iata": "DOH",
+    "country": "QA"
+  },
+  {
+    "city": "Nairobi",
+    "airport": "Jomo Kenyatta International",
+    "iata": "NBO",
+    "country": "KE"
+  },
+  {
+    "city": "Johannesburg",
+    "airport": "O.R. Tambo International",
+    "iata": "JNB",
+    "country": "ZA"
+  },
+  {
+    "city": "Cape Town",
+    "airport": "Cape Town International",
+    "iata": "CPT",
+    "country": "ZA"
+  },
+  {
+    "city": "Addis Ababa",
+    "airport": "Bole International",
+    "iata": "ADD",
+    "country": "ET"
+  },
+  {
+    "city": "Accra",
+    "airport": "Kotoka International",
+    "iata": "ACC",
+    "country": "GH"
+  },
+  {
+    "city": "Cairo",
+    "airport": "Cairo International",
+    "iata": "CAI",
+    "country": "EG"
+  },
+  {
+    "city": "Istanbul",
+    "airport": "Istanbul Airport",
+    "iata": "IST",
+    "country": "TR"
+  },
+  {
+    "city": "Paris",
+    "airport": "Charles de Gaulle",
+    "iata": "CDG",
+    "country": "FR"
+  },
+  {
+    "city": "Frankfurt",
+    "airport": "Frankfurt Airport",
+    "iata": "FRA",
+    "country": "DE"
+  },
+  {
+    "city": "Amsterdam",
+    "airport": "Schiphol",
+    "iata": "AMS",
+    "country": "NL"
+  },
+  {
+    "city": "New York",
+    "airport": "John F. Kennedy International",
+    "iata": "JFK",
+    "country": "US"
+  },
+  {
+    "city": "Los Angeles",
+    "airport": "Los Angeles International",
+    "iata": "LAX",
+    "country": "US"
+  },
+  {
+    "city": "Toronto",
+    "airport": "Pearson International",
+    "iata": "YYZ",
+    "country": "CA"
+  },
+  {
+    "city": "Mumbai",
+    "airport": "Chhatrapati Shivaji Maharaj International",
+    "iata": "BOM",
+    "country": "IN"
+  },
+  {
+    "city": "Singapore",
+    "airport": "Changi",
+    "iata": "SIN",
+    "country": "SG"
+  },
+  {
+    "city": "Bangkok",
+    "airport": "Suvarnabhumi",
+    "iata": "BKK",
+    "country": "TH"
+  },
+  {
+    "city": "Kuala Lumpur",
+    "airport": "Kuala Lumpur International",
+    "iata": "KUL",
+    "country": "MY"
+  },
+  {
+    "city": "Sydney",
+    "airport": "Sydney Kingsford Smith",
+    "iata": "SYD",
+    "country": "AU"
+  },
+  {
+    "city": "Rome",
+    "airport": "Fiumicino",
+    "iata": "FCO",
+    "country": "IT"
+  },
+  {
+    "city": "Zurich",
+    "airport": "Zurich Airport",
+    "iata": "ZRH",
+    "country": "CH"
+  },
+  {
+    "city": "Madrid",
+    "airport": "Adolfo Suárez Madrid–Barajas",
+    "iata": "MAD",
+    "country": "ES"
+  },
+  {
+    "city": "Lisbon",
+    "airport": "Humberto Delgado",
+    "iata": "LIS",
+    "country": "PT"
+  },
+  {
+    "city": "Dubai (Al Maktoum)",
+    "airport": "Al Maktoum International",
+    "iata": "DWC",
+    "country": "AE"
+  }
+]

@@ -28,7 +28,7 @@ export default function Home() {
   const [tripType, setTripType] = useState("oneway");
   const [currentImage, setCurrentImage] = useState(0);
   const [loading, setLoading] = useState(false);
-
+  const [expandedFlight, setExpandedFlight] = useState(null);
   const [flightResults, setFlightResults] = useState([]);
   const [hotelResults, setHotelResults] = useState([]);
   const [selectedFlight, setSelectedFlight] = useState(null);
@@ -423,15 +423,7 @@ const handleHotelSearch = async () => {
       const itineraries = offer.itineraries || [];
       if (!itineraries.length) return null;
 
-      const segments = itineraries[0].segments || []; // Focusing on the outbound/first itinerary
-      const firstSegment = segments[0];
-      const lastSegment = segments[segments.length - 1];
-      const airlineCode = firstSegment.carrierCode;
-
-      // Get the full name from our map, or default to the code if not found
-      const fullAirlineName = airlineNames[airlineCode] || `${airlineCode} Airlines`;
-      
-      // 1. Currency Conversion (Example rate: 1 USD = 1500 NGN)
+      const isExpanded = expandedFlight === i;
       const priceInNaira = Math.round(parseFloat(offer.price?.total || 0) * 1500);
       const formattedPrice = new Intl.NumberFormat('en-NG', {
         style: 'currency',
@@ -440,82 +432,158 @@ const handleHotelSearch = async () => {
       }).format(priceInNaira);
 
       return (
-        <div key={i} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300">
+        <div key={i} className="bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden hover:shadow-lg transition-all">
           <div className="p-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+            <div className="flex flex-col lg:flex-row gap-6">
               
-              {/* ✈️ Airline Logo & Name Section */}
-          <div className="flex items-center gap-4 min-w-[220px]">
-            <div className="w-14 h-14 bg-white rounded-lg flex items-center justify-center p-1 border border-gray-100 shadow-sm">
-              <img
-                src={`https://content.airhex.com/content/logos/airlines/${airlineCode}.svg`}
-                alt={airlineCode}
-                className="w-full h-full object-contain"
-                onError={(e) => {
-                   // Fallback to PNG if SVG fails
-                   e.target.src = `https://content.airlinecodes.co.uk/logos/${airlineCode}.png`;
-                   e.target.onerror = () => e.target.src = "https://via.placeholder.com/50?text=" + airlineCode;
-                }}
-              />
-            </div>
-            <div>
-              <p className="font-extrabold text-gray-900 text-lg leading-tight">
-                {fullAirlineName}
-              </p>
-              <p className="text-xs text-blue-600 font-bold uppercase tracking-tighter">
-                Flight {segments[0].number}
-              </p>
-            </div>
-          </div>
+              {/* === ITINERARIES SECTION (Outbound & Return) === */}
+              <div className="flex-1 space-y-6">
+                {itineraries.map((itinerary, itiIdx) => {
+                  const segments = itinerary.segments || [];
+                  const firstSegment = segments[0];
+                  const lastSegment = segments[segments.length - 1];
+                  const airlineCode = firstSegment.carrierCode;
 
-              {/* Journey Timeline (Wakanow Style) */}
-              <div className="flex-1 flex items-center justify-between px-4 max-w-xl">
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">{firstSegment.departure.iataCode}</p>
-                  <p className="text-xs text-gray-400 uppercase tracking-wider">Departure</p>
-                </div>
+                  return (
+                    <div key={itiIdx} className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+                      {/* Airline Info */}
+                      <div className="flex items-center gap-4 min-w-[200px]">
+                        <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center border p-1 shadow-sm">
+                          <img
+                            src={`https://content.airhex.com/content/logos/airlines/${airlineCode}.svg`}
+                            alt={airlineCode}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-xs font-bold text-blue-600 uppercase tracking-wider">
+                            {itiIdx === 0 ? "Departure" : "Return"}
+                          </p>
+                          <p className="font-bold text-gray-900 leading-tight">
+                            {airlineNames[airlineCode] || airlineCode}
+                          </p>
+                        </div>
+                      </div>
 
-                <div className="flex-1 px-8 flex flex-col items-center">
-                  <p className="text-xs text-gray-500 mb-1">{itineraries[0].duration?.replace("PT", "").toLowerCase()}</p>
-                  <div className="relative w-full h-[2px] bg-gray-200">
-                    <div className="absolute -top-1 left-0 w-2 h-2 rounded-full bg-blue-600"></div>
-                    <div className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-gray-400"></div>
-                  </div>
-                  <p className="text-[10px] text-blue-600 mt-1 font-semibold">
-                    {segments.length > 1 ? `${segments.length - 1} Stop(s)` : 'Non-stop'}
-                  </p>
-                </div>
+                      {/* Timeline */}
+                      <div className="flex-1 flex items-center justify-between px-4 max-w-md">
+                        <div className="text-center">
+                          <p className="text-xl font-bold">{firstSegment.departure.iataCode}</p>
+                          <p className="text-[10px] text-gray-400">
+                            {new Date(firstSegment.departure.at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </p>
+                        </div>
+                        
+                        <div className="flex-1 px-4 flex flex-col items-center">
+                          <p className="text-[10px] text-gray-400 mb-1">{itinerary.duration.replace("PT", "").toLowerCase()}</p>
+                          <div className="relative w-full h-[1px] bg-gray-300">
+                            <div className="absolute -top-1 left-0 w-2 h-2 rounded-full border border-gray-300 bg-white"></div>
+                            <Plane className={`absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 text-blue-500 ${itiIdx === 1 ? 'rotate-[270deg]' : 'rotate-90'}`} />
+                            <div className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-gray-400"></div>
+                          </div>
+                          <p className="text-[10px] mt-1 text-gray-500 font-medium">
+                            {segments.length > 1 ? `${segments.length - 1} stop(s)` : 'Non-stop'}
+                          </p>
+                        </div>
 
-                <div className="text-center">
-                  <p className="text-2xl font-bold text-gray-900">{lastSegment.arrival.iataCode}</p>
-                  <p className="text-xs text-gray-400 uppercase tracking-wider">Arrival</p>
-                </div>
+                        <div className="text-center">
+                          <p className="text-xl font-bold">{lastSegment.arrival.iataCode}</p>
+                          <p className="text-[10px] text-gray-400">
+                            {new Date(lastSegment.arrival.at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Price & Action Section */}
-              <div className="md:border-l md:pl-8 flex flex-col items-center md:items-end justify-center">
-                <p className="text-xs text-gray-400 line-through">₦{(priceInNaira * 1.1).toLocaleString()}</p>
-                <p className="text-2xl font-black text-blue-900 leading-none mb-3">
-                  {formattedPrice}
-                </p>
+              {/* === PRICE & ACTION SECTION === */}
+              <div className="lg:border-l lg:pl-8 flex flex-col items-center justify-center min-w-[180px]">
+                <p className="text-xs text-gray-400 uppercase font-bold tracking-widest">Total Price</p>
+                <p className="text-3xl font-black text-blue-900">{formattedPrice}</p>
+                
                 <button
                   onClick={() => {
-                    const flightDesc = `${airlineCode} | ${firstSegment.departure.iataCode} → ${lastSegment.arrival.iataCode}`;
+                    const flightDesc = `${itineraries[0].segments[0].departure.iataCode} ↔ ${itineraries[0].segments.slice(-1)[0].arrival.iataCode}`;
                     navigate(`/booking?flight=${encodeURIComponent(flightDesc)}&price=${priceInNaira}`);
                   }}
-                  className="w-full md:w-auto bg-orange-500 hover:bg-orange-600 text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-orange-200 transition-transform active:scale-95"
+                  className="mt-4 w-full bg-orange-500 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-orange-600 shadow-md shadow-orange-200 transition-all active:scale-95"
                 >
-                  Book Now
+                  Book This Flight
+                </button>
+                
+                <button 
+                  onClick={() => setExpandedFlight(isExpanded ? null : i)}
+                  className="mt-3 text-blue-600 text-xs font-bold hover:text-blue-800 transition-colors flex items-center gap-1"
+                >
+                  {isExpanded ? "Hide Details" : "View Details"}
                 </button>
               </div>
             </div>
+
+            {/* === EXPANDABLE DETAILS === */}
+            <AnimatePresence>
+              {isExpanded && (
+                <motion.div 
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  className="mt-6 pt-6 border-t border-dashed border-gray-200"
+                >
+                  <div className="grid md:grid-cols-2 gap-8">
+                    {/* Map through all itineraries for detailed path */}
+                    <div className="space-y-6">
+                      {itineraries.map((iti, itiIdx) => (
+                        <div key={itiIdx}>
+                          <p className="text-xs font-black text-gray-400 uppercase mb-3 tracking-widest">
+                            {itiIdx === 0 ? "Outbound Flight Path" : "Return Flight Path"}
+                          </p>
+                          {iti.segments.map((seg, idx) => (
+                            <div key={idx} className="flex gap-3 mb-3 last:mb-0">
+                              <div className="flex flex-col items-center">
+                                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                                <div className="w-[1px] h-full bg-gray-200"></div>
+                              </div>
+                              <div className="text-xs">
+                                <p className="font-bold text-gray-700">{seg.departure.iataCode} → {seg.arrival.iataCode}</p>
+                                <p className="text-gray-400">{seg.carrierCode} {seg.number} • {seg.duration.replace("PT", "").toLowerCase()}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Fare Information */}
+                    <div className="bg-blue-50/50 rounded-2xl p-5 border border-blue-100">
+                      <p className="text-sm font-bold text-blue-900 mb-4">Fare & Baggage</p>
+                      <div className="space-y-4">
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                          <Briefcase className="w-5 h-5 text-blue-500" />
+                          <span>Baggage: <strong>{offer.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.includedCheckedBags?.quantity || 0} Checked Bag(s)</strong></span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                          <Users className="w-5 h-5 text-blue-500" />
+                          <span>Cabin: <strong>{offer.travelerPricings?.[0]?.fareDetailsBySegment?.[0]?.cabin}</strong></span>
+                        </div>
+                        <div className="flex items-center gap-3 text-sm text-gray-700">
+                          <Calendar className="w-5 h-5 text-blue-500" />
+                          <span>Last Ticketing: {offer.lastTicketingDate}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       );
     })}
   </div>
 )}
-              </>
+</>
             ) : (
               <>
                 {/* 🏨 Hotel Form */}
