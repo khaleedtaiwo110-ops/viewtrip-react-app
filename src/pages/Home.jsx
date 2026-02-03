@@ -476,9 +476,9 @@ const handleHotelSearch = async () => {
                         
                         <div className="flex-1 px-4 flex flex-col items-center">
                           <p className="text-[10px] text-gray-400 mb-1">{itinerary.duration.replace("PT", "").toLowerCase()}</p>
-                          <div className="relative w-full h-[1px] bg-gray-300">
+                          <div className="relative w-full h-px bg-gray-300">
                             <div className="absolute -top-1 left-0 w-2 h-2 rounded-full border border-gray-300 bg-white"></div>
-                            <Plane className={`absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 text-blue-500 ${itiIdx === 1 ? 'rotate-[270deg]' : 'rotate-90'}`} />
+                            <Plane className={`absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 text-blue-500 ${itiIdx === 1 ? 'rotate-270' : 'rotate-90'}`} />
                             <div className="absolute -top-1 right-0 w-2 h-2 rounded-full bg-gray-400"></div>
                           </div>
                           <p className="text-[10px] mt-1 text-gray-500 font-medium">
@@ -543,7 +543,7 @@ const handleHotelSearch = async () => {
                             <div key={idx} className="flex gap-3 mb-3 last:mb-0">
                               <div className="flex flex-col items-center">
                                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-                                <div className="w-[1px] h-full bg-gray-200"></div>
+                                <div className="w-1px h-full bg-gray-200"></div>
                               </div>
                               <div className="text-xs">
                                 <p className="font-bold text-gray-700">{seg.departure.iataCode} → {seg.arrival.iataCode}</p>

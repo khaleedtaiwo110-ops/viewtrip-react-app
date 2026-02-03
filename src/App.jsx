@@ -40,9 +40,8 @@ function App() {
           <Route path="/Trendinghotels" element={<TrendingHotels/>} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsAndConditions />} />
-         <Route path="/about-us" element={<AboutUs />} />
- 
-         <Route path="/disclaimer" element={<Disclaimer />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
 
         </Routes>
       </main>

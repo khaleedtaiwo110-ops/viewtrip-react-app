@@ -22,7 +22,7 @@ const Navbar = () => {
   const navLinks = [
     { name: "Home", path: "/" },
     { name: "Tours", path: "/tours" },
-    { name: "Testimonials", path: "/testimonials" },
+    { name: "About", path: "/about-us" },
     { name: "Contact", path: "/contact" },
     { name: "Search Flights", path: "/flight-offers" },
     { name: "Visas", path: "/visas" },
