@@ -1,4 +1,3 @@
-// AirportSelector.jsx  (or paste inside Home.jsx above the component)
 import React, { useState, useEffect, useRef } from "react";
 import { Search, ChevronDown } from "lucide-react";
 
