@@ -44,79 +44,37 @@ app.get("/api/search", async (req, res) => {
 });
 
 // ✅ Flight Offers Search
-app.get("/api/flight-offers", async (req, res) => {
-  const {
-    origin,
-    destination,
-    date,
-    returnDate,
-    adults = 1,
-    travelClass = "ECONOMY",
-    tripType = "ONEWAY",
-  } = req.query;
-
-  if (!origin || !destination || !date) {
-    return res.status(400).json({ error: "Missing origin, destination, or date" });
-  }
-
+app.get('/api/flight-offers', async (req, res) => {
   try {
-    const params = {
+    // 1. Destructure exactly what the React app is sending
+    const { origin, destination, date, travelClass, adults, children, infants } = req.query;
+
+    // 2. Build out the query object dynamically
+    const searchParams = {
       originLocationCode: origin,
       destinationLocationCode: destination,
       departureDate: date,
-      adults: parseInt(adults),
-      currencyCode: "USD",
-      max: 10,
-      travelClass: travelClass.toUpperCase(),
+      travelClass: travelClass || 'ECONOMY',
+      adults: adults || '1', // fallback default
     };
 
-    if (tripType === "ROUNDTRIP" && returnDate) params.returnDate = returnDate;
-
-    const response = await amadeus.shopping.flightOffersSearch.get(params);
-    res.json(response.data);
-  } catch (error) {
-    console.error("❌ Flight search error:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ✅ FIXED HOTEL SEARCH API
-app.get("/api/hotels", async (req, res) => {
-  const { cityCode, checkInDate, checkOutDate, adults = 1 } = req.query;
-
-  if (!cityCode || !checkInDate || !checkOutDate) {
-    return res.status(400).json({ error: "Missing required fields" });
-  }
-
-  try {
-    // ⭐ STEP 1: Get hotel IDs for the city
-    const hotelsRes = await amadeus.referenceData.locations.hotels.byCity.get({
-      cityCode,
-    });
-
-    const hotelIds = hotelsRes.data.map(h => h.hotelId).slice(0, 20); // take first 20 hotels
-
-    if (!hotelIds.length) {
-      return res.status(404).json({ error: "No hotels found in this city" });
+    // 3. Only append children/infants if they exist and are greater than 0
+    if (children && parseInt(children) > 0) {
+      searchParams.children = children;
+    }
+    if (infants && parseInt(infants) > 0) {
+      searchParams.infants = infants;
     }
 
-    // ⭐ STEP 2: Fetch offers using hotel IDs
-    const offersRes = await amadeus.shopping.hotelOffersSearch.get({
-      hotelIds: hotelIds.join(","),
-      checkInDate,
-      checkOutDate,
-      adults,
-      currency: "USD",
-    });
-
-    return res.json({ data: offersRes.data });
-
+    // 4. Dispatch to Amadeus SDK
+    const response = await amadeus.shopping.flightOffersSearch.get(searchParams);
+    
+    res.json(response.data);
   } catch (error) {
-    console.error("❌ FIXED HOTEL SEARCH ERROR:", error);
+    console.error("Amadeus Search Error:", error);
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // ✅ Simulate Flight Booking
 app.post("/api/book-flight", async (req, res) => {
