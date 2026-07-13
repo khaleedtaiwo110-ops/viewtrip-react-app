@@ -13,7 +13,6 @@ import AdBanner from "../componentss/adsgoogle";
 import { useNavigate } from "react-router-dom";
 import AirplaneLoader from "../componentss/AirplaneLoader";
 import { AirportSelector } from "./AirportSelector";
-import { PassengerSelector } from "./PassengerSelector";
 import AdventureActivities from "./AdventureActivities";
 import WhyBookWithUs from "./WhyBookWithUs";
 
@@ -25,17 +24,24 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [hotelResults, setHotelResults] = useState([]);
 
-  // Flight Form States
+  // Flight Form States (Updated passengers to structured object)
   const [flightForm, setFlightForm] = useState({
     origin: "",
     destination: "",
     date: "",
     returnDate: "",
-    passengers: 1,
+    passengers: {
+      adults: 1,
+      children: 0,
+      infants: 0,
+    },
     travelClass: "ECONOMY",
     originLabel: "",
     destinationLabel: "",
   });
+
+  // State to control visibility of custom passenger popup menu
+  const [showHomePaxDropdown, setShowHomePaxDropdown] = useState(false);
 
   const [hotelForm, setHotelForm] = useState({
     destination: "",
@@ -73,7 +79,7 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // === ✈️ Handle Flight Search (Redirect with State) ===
+  // === ✈️ Handle Flight Search (Redirect with Full Breakdown State) ===
   const handleFlightSearch = () => {
     const { origin, destination, date, returnDate, passengers, travelClass } = flightForm;
     if (!origin || !destination || !date) {
@@ -88,7 +94,9 @@ export default function Home() {
         destination,
         date,
         returnDate: tripType === "round" ? returnDate : undefined,
-        adults: passengers,
+        adults: passengers.adults,
+        children: passengers.children,
+        infants: passengers.infants,
         travelClass,
         tripType: tripType === "round" ? "ROUNDTRIP" : "ONEWAY",
       },
@@ -134,6 +142,8 @@ export default function Home() {
       setLoading(false);
     }
   };
+
+  const totalPassengers = flightForm.passengers.adults + flightForm.passengers.children + flightForm.passengers.infants;
 
   return (
     <>
@@ -283,12 +293,123 @@ export default function Home() {
                         </div>
                       )}
 
-                      <div className="flex-1 min-w-[150px] p-4 border-r">
-                        <PassengerSelector
-                          value={flightForm.passengers}
-                          onChange={(v) => setFlightForm({ ...flightForm, passengers: v })}
-                        />
-                        <p className="text-sm text-gray-400">1 Traveller</p>
+                      {/* Customized Passenger Component Breakdown UI Section */}
+                      <div className="flex-1 min-w-[180px] p-4 border-r relative">
+                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Travellers</p>
+                        <button
+                          type="button"
+                          onClick={() => setShowHomePaxDropdown(!showHomePaxDropdown)}
+                          className="text-2xl font-bold text-gray-900 w-full text-left bg-transparent outline-none flex items-center justify-between"
+                        >
+                          <span>{totalPassengers} {totalPassengers > 1 ? "Travellers" : "Traveller"}</span>
+                        </button>
+                        <p className="text-sm text-gray-400">
+                          {flightForm.passengers.adults}A, {flightForm.passengers.children}C, {flightForm.passengers.infants}I
+                        </p>
+
+                        <AnimatePresence>
+                          {showHomePaxDropdown && (
+                            <>
+                              <div className="fixed inset-0 z-20" onClick={() => setShowHomePaxDropdown(false)} />
+                              <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
+                                className="absolute left-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-64 z-30 space-y-4 text-sm text-gray-800"
+                              >
+                                {/* Adults */}
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-bold">Adults</p>
+                                    <p className="text-[11px] text-gray-400">Age 12+</p>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <button 
+                                      type="button" 
+                                      disabled={flightForm.passengers.adults <= 1} 
+                                      onClick={() => setFlightForm({
+                                        ...flightForm, 
+                                        passengers: { ...flightForm.passengers, adults: flightForm.passengers.adults - 1 }
+                                      })} 
+                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold disabled:opacity-50"
+                                    >-</button>
+                                    <span className="font-bold w-4 text-center">{flightForm.passengers.adults}</span>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => setFlightForm({
+                                        ...flightForm, 
+                                        passengers: { ...flightForm.passengers, adults: flightForm.passengers.adults + 1 }
+                                      })} 
+                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold"
+                                    >+</button>
+                                  </div>
+                                </div>
+
+                                {/* Children */}
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-bold">Children</p>
+                                    <p className="text-[11px] text-gray-400">Age 2-11</p>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <button 
+                                      type="button" 
+                                      disabled={flightForm.passengers.children <= 0} 
+                                      onClick={() => setFlightForm({
+                                        ...flightForm, 
+                                        passengers: { ...flightForm.passengers, children: flightForm.passengers.children - 1 }
+                                      })} 
+                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold disabled:opacity-50"
+                                    >-</button>
+                                    <span className="font-bold w-4 text-center">{flightForm.passengers.children}</span>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => setFlightForm({
+                                        ...flightForm, 
+                                        passengers: { ...flightForm.passengers, children: flightForm.passengers.children + 1 }
+                                      })} 
+                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold"
+                                    >+</button>
+                                  </div>
+                                </div>
+
+                                {/* Infants */}
+                                <div className="flex items-center justify-between">
+                                  <div>
+                                    <p className="font-bold">Infants</p>
+                                    <p className="text-[11px] text-gray-400">Under 2</p>
+                                  </div>
+                                  <div className="flex items-center gap-3">
+                                    <button 
+                                      type="button" 
+                                      disabled={flightForm.passengers.infants <= 0} 
+                                      onClick={() => setFlightForm({
+                                        ...flightForm, 
+                                        passengers: { ...flightForm.passengers, infants: flightForm.passengers.infants - 1 }
+                                      })} 
+                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold disabled:opacity-50"
+                                    >-</button>
+                                    <span className="font-bold w-4 text-center">{flightForm.passengers.infants}</span>
+                                    <button 
+                                      type="button" 
+                                      onClick={() => setFlightForm({
+                                        ...flightForm, 
+                                        passengers: { ...flightForm.passengers, infants: flightForm.passengers.infants + 1 }
+                                      })} 
+                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold"
+                                    >+</button>
+                                  </div>
+                                </div>
+
+                                <div className="pt-2 border-t border-gray-100 flex justify-end">
+                                  <button type="button" onClick={() => setShowHomePaxDropdown(false)} className="px-3 py-1.5 bg-blue-600 text-white font-bold text-xs rounded-lg shadow hover:bg-blue-700 transition">
+                                    Apply
+                                  </button>
+                                </div>
+                              </motion.div>
+                            </>
+                          )}
+                        </AnimatePresence>
                       </div>
 
                       <div className="flex-1 min-w-[180px] p-4">

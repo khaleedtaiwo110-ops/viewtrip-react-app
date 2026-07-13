@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, useLocation } from "react-router-dom"; // Added useLocation
 import Navbar from "./componentss/Navbar";
 import Footer from "./componentss/Footer";
 import Home from "./pages/Home";
@@ -19,12 +19,25 @@ import Disclaimer from "./pages/Disclaimer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
 
-
 function App() {
+  const location = useLocation();
+
+  // Check if the current page is the home page
+  const isHomePage = location.pathname === "/";
+
   return (
-    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 pt-16">
+    <div className="flex flex-col min-h-screen bg-gray-50 text-gray-800 relative">
       <Navbar />
-      <main className="flex-1">
+
+      {/* 💡 SMART CONDITIONAL PADDING:
+        - If on Home Page: pt-0 (allows hero image to sit behind the transparent/fixed navbar beautifully)
+        - If on any OTHER page: pt-24 md:pt-28 (safely pushes internal content downwards so it's never covered)
+      */}
+      <main 
+        className={`flex-grow transition-all duration-300 ${
+          isHomePage ? "pt-0" : "pt-24 md:pt-28"
+        }`}
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/destinations" element={<Destinations />} />
@@ -36,15 +49,15 @@ function App() {
           <Route path="/flight-offers" element={<FlightOffers />} />
           <Route path="/book" element={<BookingForm />} />
           <Route path="/visas" element={<VisaSection />} />
-          <Route path="/blog" element={<Blog/>} />
-          <Route path="/Trendinghotels" element={<TrendingHotels/>} />
+          <Route path="/blog" element={<Blog />} />
+          <Route path="/Trendinghotels" element={<TrendingHotels />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
-
         </Routes>
       </main>
+
       <Footer />
     </div>
   );
