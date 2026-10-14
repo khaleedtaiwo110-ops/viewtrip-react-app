@@ -4,7 +4,17 @@ import {
   BedDouble,
   ArrowLeftRight,
   MapPin,
-  X,
+  Calendar,
+  User,
+  ShieldCheck,
+  Headphones,
+  Users,
+  CreditCard,
+  Briefcase,
+  Compass,
+  FileText,
+  PlusCircle,
+  ChevronDown
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import TrendingHotels from "./TrendingHotels";
@@ -19,12 +29,12 @@ import WhyBookWithUs from "./WhyBookWithUs";
 export default function Home() {
   const navigate = useNavigate();
   const [tab, setTab] = useState("flights");
-  const [tripType, setTripType] = useState("oneway");
+  const [tripType, setTripType] = useState("round");
   const [currentImage, setCurrentImage] = useState(0);
   const [loading, setLoading] = useState(false);
   const [hotelResults, setHotelResults] = useState([]);
 
-  // Flight Form States (Updated passengers to structured object)
+  // Flight Form State
   const [flightForm, setFlightForm] = useState({
     origin: "",
     destination: "",
@@ -40,7 +50,7 @@ export default function Home() {
     destinationLabel: "",
   });
 
-  // State to control visibility of custom passenger popup menu
+  // State to control visibility of custom passenger popup menu  
   const [showHomePaxDropdown, setShowHomePaxDropdown] = useState(false);
 
   const [hotelForm, setHotelForm] = useState({
@@ -62,11 +72,11 @@ export default function Home() {
       title: "Bali, Indonesia",
     },
     {
-      img: " /images/hotel8.jpg ",
+      img: "/images/hotel8.jpg",
       title: "Dubai, UAE",
     },
     {
-      img: " /images/hotel7.avif ",
+      img: "/images/hotel7.avif",
       title: "Lagos, Nigeria",
     },
   ];
@@ -79,7 +89,17 @@ export default function Home() {
     return () => clearInterval(timer);
   }, []);
 
-  // === ✈️ Handle Flight Search (Redirect with Full Breakdown State) ===
+  // Swap Origin and Destination
+  const handleSwapAirports = () => {
+    setFlightForm((prev) => ({
+      ...prev,
+      origin: prev.destination,
+      destination: prev.origin,
+      originLabel: prev.destinationLabel,
+      destinationLabel: prev.originLabel,
+    }));
+  };
+
   const handleFlightSearch = () => {
     const { origin, destination, date, returnDate, passengers, travelClass } = flightForm;
     if (!origin || !destination || !date) {
@@ -143,266 +163,423 @@ export default function Home() {
     }
   };
 
-  const totalPassengers = flightForm.passengers.adults + flightForm.passengers.children + flightForm.passengers.infants;
+  const totalPassengers =
+    flightForm.passengers.adults +
+    flightForm.passengers.children +
+    flightForm.passengers.infants;
 
   return (
     <>
       {loading && <AirplaneLoader />}
 
-      <div className="flex flex-col items-center">
-        {/* === HERO SECTION === */}
-        <div className="relative w-full h-screen pt-36 flex flex-col items-center justify-center text-white overflow-hidden ">
+      <div className="flex flex-col items-center w-full">
+        {/* === HERO SECTION WITH BACKGROUND COLLAGE === */}
+        <div className="relative w-full min-h-screen pt-32 pb-16 flex flex-col items-center justify-center text-white overflow-hidden">
+          
+          {/* Background Collage Grid spanning full screen (Crystal Clear) */}
+          <div className="absolute inset-0 grid grid-cols-2 md:grid-cols-4 gap-4 p-4 opacity-80 pointer-events-none scale-105">
+            <div className="flex flex-col gap-4">
+              <div className="h-64 w-full rounded-3xl overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1507525428034-b723cf961d3e?auto=format&fit=crop&w=1200&q=90" alt="bg" className="w-full h-full object-cover" />
+              </div>
+              <div className="h-80 w-full rounded-3xl overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&w=1200&q=90" alt="bg" className="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-4 pt-12 hidden md:flex">
+              <div className="h-80 w-full rounded-3xl overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=1200&q=90" alt="bg" className="w-full h-full object-cover" />
+              </div>
+              <div className="h-64 w-full rounded-3xl overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=90" alt="bg" className="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-4">
+              <div className="h-72 w-full rounded-3xl overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&w=1200&q=90" alt="bg" className="w-full h-full object-cover" />
+              </div>
+              <div className="h-72 w-full rounded-3xl overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=90" alt="bg" className="w-full h-full object-cover" />
+              </div>
+            </div>
+            <div className="flex flex-col gap-4 pt-16 hidden md:flex">
+              <div className="h-64 w-full rounded-3xl overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1503220317375-aaad61436b1b?auto=format&fit=crop&w=1200&q=90" alt="bg" className="w-full h-full object-cover" />
+              </div>
+              <div className="h-80 w-full rounded-3xl overflow-hidden shadow-2xl">
+                <img src="https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?auto=format&fit=crop&w=1200&q=90" alt="bg" className="w-full h-full object-cover" />
+              </div>
+            </div>
+          </div>
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentImage}
-              className="absolute inset-0"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5 }}
-              style={{
-                backgroundImage: `url(${destinations[currentImage].img})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-              }}
-            />
-          </AnimatePresence>
+          {/* Clean dark tint overlay with zero blur filters */}
+          <div className="absolute inset-0 bg-black/45"></div>
 
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
-
-          {/* === MAIN BOOKING CARD === */}
-          <div className="relative z-10 w-full min-h-screen px-6 py-8 overflow-y-auto"> 
-            <h1 className="text-center text-4xl font-bold mb-6 text-white">
-              Find Your Best Holiday
-            </h1>
-
-            {/* Tabs */}
-            <div className="flex justify-center space-x-4 mb-8">
-              <button
-                onClick={() => setTab("flights")}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md transition ${
-                  tab === "flights"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 hover:bg-blue-50"
-                }`}
-              >
-                <Plane className="w-5 h-5" /> Flights
-              </button>
-              <button
-                onClick={() => setTab("hotels")}
-                className={`flex items-center gap-2 px-6 py-3 rounded-2xl shadow-md transition ${
-                  tab === "hotels"
-                    ? "bg-blue-600 text-white"
-                    : "bg-white text-gray-700 hover:bg-blue-50"
-                }`}
-              >
-                <BedDouble className="w-5 h-5" /> Hotels
-              </button>
+          {/* === HORIZONTAL FULL-WIDTH FORM CONTAINER === */}
+          <div className="relative z-10 w-full max-w-6xl mx-auto px-4">
+            
+            {/* Trust Badges Bar */}
+            <div className="flex flex-wrap items-center justify-center gap-6 mb-6 text-xs font-medium text-white/90">
+              <div className="flex items-center gap-1.5">
+                <Users className="w-4 h-4 text-blue-300" />
+                <span><strong className="text-white">2M+</strong> travellers</span>
+              </div>
+              <span className="text-white/30">•</span>
+              <div className="flex items-center gap-1.5">
+                <Headphones className="w-4 h-4 text-blue-300" />
+                <span><strong className="text-white">24/7</strong> support</span>
+              </div>
+              <span className="text-white/30">•</span>
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-blue-300" />
+                <span><strong className="text-white">IATA</strong> certified</span>
+              </div>
+              <span className="text-white/30">•</span>
+              <div className="flex items-center gap-1.5">
+                <CreditCard className="w-4 h-4 text-blue-300" />
+                <span><strong className="text-white">Flexible</strong> payment</span>
+              </div>
             </div>
 
-            {/* === FORMS === */}
-            <div className="space-y-6 text-black w-full h-full overflow-auto"> 
-              {tab === "flights" ? (
-                <>
-                  <h2 className="text-xl font-semibold text-white mb-3 flex items-center gap-2">
-                    <Plane /> Book a Flight
-                  </h2>
+            {/* WIDGET BOX */}
+            <div className="bg-white rounded-3xl shadow-2xl overflow-hidden border border-white/20 text-gray-800">
+              
+              {/* TOP NAVIGATION TABS */}
+              <div className="bg-slate-100/90 border-b border-gray-200 px-4 pt-3 flex flex-wrap gap-1 overflow-x-auto">
+                <button
+                  onClick={() => setTab("flights")}
+                  className={`flex items-center gap-2 px-5 py-3 rounded-t-2xl font-bold text-sm transition-all ${
+                    tab === "flights"
+                      ? "bg-white text-blue-600 shadow-sm border-t-2 border-blue-600"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-slate-200/60"
+                  }`}
+                >
+                  <Plane className="w-4 h-4" /> Flights
+                </button>
+                <button
+                  onClick={() => setTab("hotels")}
+                  className={`flex items-center gap-2 px-5 py-3 rounded-t-2xl font-bold text-sm transition-all ${
+                    tab === "hotels"
+                      ? "bg-white text-blue-600 shadow-sm border-t-2 border-blue-600"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-slate-200/60"
+                  }`}
+                >
+                  <BedDouble className="w-4 h-4" /> Hotels
+                </button>
+                <button
+                  onClick={() => navigate("/packages")}
+                  className="flex items-center gap-2 px-5 py-3 rounded-t-2xl font-semibold text-sm text-gray-500 hover:text-gray-900 transition-all"
+                >
+                  <Briefcase className="w-4 h-4" /> Packages
+                </button>
+                <button
+                  onClick={() => navigate("/tours")}
+                  className="flex items-center gap-2 px-5 py-3 rounded-t-2xl font-semibold text-sm text-gray-500 hover:text-gray-900 transition-all"
+                >
+                  <Compass className="w-4 h-4" /> Tours
+                </button>
+                <button
+                  onClick={() => navigate("/visa")}
+                  className="flex items-center gap-2 px-5 py-3 rounded-t-2xl font-semibold text-sm text-gray-500 hover:text-gray-900 transition-all"
+                >
+                  <FileText className="w-4 h-4" /> Visa
+                </button>
+              </div>
 
-                  {/* Trip Type Selector */}
-                  <div className="flex justify-center gap-4 mb-4">
-                    {["oneway", "round"].map((type) => (
-                      <label
-                        key={type}
-                        className={`cursor-pointer px-4 py-2 rounded-xl font-medium transition 
-                          ${tripType === type ? "bg-blue-600 text-white" : "bg-white text-gray-700 hover:bg-blue-50"}`}
+              {/* WIDGET BODY */}
+              <div className="p-6 md:p-8">
+                {tab === "flights" ? (
+                  <div className="space-y-6">
+                    
+                    {/* TRIP TYPE SELECTION */}
+                    <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-full w-fit">
+                      <button
+                        type="button"
+                        onClick={() => setTripType("round")}
+                        className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                          tripType === "round"
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
                       >
-                        <input
-                          type="radio"
-                          value={type}
-                          checked={tripType === type}
-                          onChange={() => setTripType(type)}
-                          className="hidden"
-                        />
-                        {type === "oneway" ? "One-way" : "Round-trip"}
-                      </label>
-                    ))}
-                  </div>
+                        Round trip
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTripType("oneway")}
+                        className={`px-5 py-1.5 rounded-full text-xs font-bold transition-all ${
+                          tripType === "oneway"
+                            ? "bg-blue-600 text-white shadow-md"
+                            : "text-gray-600 hover:text-gray-900"
+                        }`}
+                      >
+                        One way
+                      </button>
+                    </div>
 
-                  {/* === FULL FLIGHT FORM === */}     
-                  <div className="bg-white rounded-3xl shadow-xl p-6 mt-6">
-                    <div className="flex flex-wrap items-center justify-between border rounded-2xl">
-
-                      <div className="flex-1 min-w-[220px] p-4 border-r">
-                        <AirportSelector
-                          label="From"
-                          value={flightForm.origin}
-                          placeholder="LOS"
-                          onChange={(iata, labelText) => setFlightForm({...flightForm, origin: iata, originLabel: labelText})}
-                          airportsUrl="/airports.json"
-                        />
-                        <p className="text-sm text-gray-400">{flightForm.originLabel || ""}</p>
-                      </div>
-
-                      <div className="p-4 flex items-center justify-center border-r">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                          <ArrowLeftRight className="w-5 h-5 text-blue-600" />
-                        </div>
-                      </div>
-
-                      <div className="flex-1 min-w-[220px] p-4 border-r">
-                        <AirportSelector
-                          label="To"
-                          value={flightForm.destination}
-                          placeholder="DXB"
-                          onChange={(iata, labelText) =>
-                            setFlightForm({ ...flightForm, destination: iata, destinationLabel: labelText })
-                          }
-                          airportsUrl="/airports.json"
-                        />
-                        <p className="text-sm text-gray-400">{flightForm.destinationLabel || ""}</p>
-                      </div>
-
-                      <div className="flex-1 min-w-[180px] p-4 border-r">
-                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Departure</p>
-                        <input
-                          type="date"
-                          value={flightForm.date}
-                          onChange={(e) => setFlightForm({ ...flightForm, date: e.target.value })}
-                          className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
-                        />
-                        <p className="text-sm text-gray-400">
-                          {flightForm.date ? new Date(flightForm.date).toDateString() : ""}
-                        </p>
-                      </div>
-
-                      {tripType === "round" && (
-                        <div className="flex-1 min-w-[180px] p-4 border-r">
-                          <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Return</p>
-                          <input
-                            type="date"
-                            value={flightForm.returnDate}
-                            onChange={(e) =>
-                              setFlightForm({ ...flightForm, returnDate: e.target.value })
+                    {/* MAIN SEARCH ROW */}
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+                      
+                      {/* FROM & TO CONTAINER WITH SWAP BUTTON */}
+                      <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 gap-2 relative">
+                        <div className="border border-gray-300 rounded-2xl p-3 hover:border-blue-500 focus-within:border-blue-600 transition bg-white">
+                          <AirportSelector
+                            label="FROM"
+                            value={flightForm.origin}
+                            placeholder="LOS"
+                            onChange={(iata, labelText) =>
+                              setFlightForm({
+                                ...flightForm,
+                                origin: iata,
+                                originLabel: labelText,
+                              })
                             }
-                            className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
+                            airportsUrl="/airports.json"
                           />
-                          <p className="text-sm text-gray-400">
-                            {flightForm.returnDate ? new Date(flightForm.returnDate).toDateString() : ""}
+                          <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                            {flightForm.originLabel || "Select Origin"}
                           </p>
                         </div>
-                      )}
 
-                      {/* Customized Passenger Component Breakdown UI Section */}
-                      <div className="flex-1 min-w-[180px] p-4 border-r relative">
-                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Travellers</p>
+                        <button
+                          type="button"
+                          onClick={handleSwapAirports}
+                          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10 w-8 h-8 rounded-full bg-white border border-gray-300 shadow-md flex items-center justify-center hover:bg-blue-50 hover:border-blue-400 transition"
+                          title="Swap Origin and Destination"
+                        >
+                          <ArrowLeftRight className="w-3.5 h-3.5 text-blue-600" />
+                        </button>
+
+                        <div className="border border-gray-300 rounded-2xl p-3 hover:border-blue-500 focus-within:border-blue-600 transition bg-white">
+                          <AirportSelector
+                            label="TO"
+                            value={flightForm.destination}
+                            placeholder="ACC"
+                            onChange={(iata, labelText) =>
+                              setFlightForm({
+                                ...flightForm,
+                                destination: iata,
+                                destinationLabel: labelText,
+                              })
+                            }
+                            airportsUrl="/airports.json"
+                          />
+                          <p className="text-[11px] text-gray-400 truncate mt-0.5">
+                            {flightForm.destinationLabel || "Select Destination"}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* DEPARTURE & RETURN DATES */}
+                      <div className="lg:col-span-4 border border-gray-300 rounded-2xl p-3 flex items-center divide-x divide-gray-200 hover:border-blue-500 transition bg-white">
+                        <div className="flex-1 pr-2">
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            DEPARTURE
+                          </span>
+                          <div className="flex items-center gap-2 mt-0.5">
+                            <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
+                            <input
+                              type="date"
+                              value={flightForm.date}
+                              onChange={(e) =>
+                                setFlightForm({ ...flightForm, date: e.target.value })
+                              }
+                              className="w-full text-xs sm:text-sm font-bold text-gray-900 bg-transparent outline-none cursor-pointer"
+                            />
+                          </div>
+                        </div>
+
+                        {tripType === "round" && (
+                          <div className="flex-1 pl-3">
+                            <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                              RETURN
+                            </span>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <Calendar className="w-4 h-4 text-blue-600 shrink-0" />
+                              <input
+                                type="date"
+                                value={flightForm.returnDate}
+                                onChange={(e) =>
+                                  setFlightForm({
+                                    ...flightForm,
+                                    returnDate: e.target.value,
+                                  })
+                                }
+                                className="w-full text-xs sm:text-sm font-bold text-gray-900 bg-transparent outline-none cursor-pointer"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* TRAVELLERS */}
+                      <div className="lg:col-span-3 border border-gray-300 rounded-2xl p-3 relative hover:border-blue-500 transition bg-white">
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                          TRAVELLERS
+                        </span>
                         <button
                           type="button"
                           onClick={() => setShowHomePaxDropdown(!showHomePaxDropdown)}
-                          className="text-2xl font-bold text-gray-900 w-full text-left bg-transparent outline-none flex items-center justify-between"
+                          className="w-full text-left flex items-center justify-between mt-0.5"
                         >
-                          <span>{totalPassengers} {totalPassengers > 1 ? "Travellers" : "Traveller"}</span>
+                          <div className="flex items-center gap-2">
+                            <User className="w-4 h-4 text-blue-600" />
+                            <span className="text-xs sm:text-sm font-bold text-gray-900">
+                              {totalPassengers} {totalPassengers > 1 ? "Passengers" : "Passenger"}
+                            </span>
+                          </div>
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
                         </button>
-                        <p className="text-sm text-gray-400">
-                          {flightForm.passengers.adults}A, {flightForm.passengers.children}C, {flightForm.passengers.infants}I
-                        </p>
 
+                        {/* TRAVELLER POPUP */}
                         <AnimatePresence>
                           {showHomePaxDropdown && (
                             <>
-                              <div className="fixed inset-0 z-20" onClick={() => setShowHomePaxDropdown(false)} />
+                              <div
+                                className="fixed inset-0 z-20"
+                                onClick={() => setShowHomePaxDropdown(false)}
+                              />
                               <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: 10 }}
-                                className="absolute left-0 mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-64 z-30 space-y-4 text-sm text-gray-800"
+                                className="absolute right-0 top-full mt-2 bg-white rounded-2xl shadow-2xl border border-gray-100 p-4 w-72 z-30 space-y-4 text-sm text-gray-800"
                               >
-                                {/* Adults */}
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <p className="font-bold">Adults</p>
-                                    <p className="text-[11px] text-gray-400">Age 12+</p>
+                                    <p className="text-[11px] text-gray-400">12+ years</p>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <button 
-                                      type="button" 
-                                      disabled={flightForm.passengers.adults <= 1} 
-                                      onClick={() => setFlightForm({
-                                        ...flightForm, 
-                                        passengers: { ...flightForm.passengers, adults: flightForm.passengers.adults - 1 }
-                                      })} 
-                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold disabled:opacity-50"
-                                    >-</button>
-                                    <span className="font-bold w-4 text-center">{flightForm.passengers.adults}</span>
-                                    <button 
-                                      type="button" 
-                                      onClick={() => setFlightForm({
-                                        ...flightForm, 
-                                        passengers: { ...flightForm.passengers, adults: flightForm.passengers.adults + 1 }
-                                      })} 
-                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold"
-                                    >+</button>
+                                    <button
+                                      type="button"
+                                      disabled={flightForm.passengers.adults <= 1}
+                                      onClick={() =>
+                                        setFlightForm({
+                                          ...flightForm,
+                                          passengers: {
+                                            ...flightForm.passengers,
+                                            adults: flightForm.passengers.adults - 1,
+                                          },
+                                        })
+                                      }
+                                      className="w-7 h-7 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold disabled:opacity-40"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="font-bold w-4 text-center">
+                                      {flightForm.passengers.adults}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setFlightForm({
+                                          ...flightForm,
+                                          passengers: {
+                                            ...flightForm.passengers,
+                                            adults: flightForm.passengers.adults + 1,
+                                          },
+                                        })
+                                      }
+                                      className="w-7 h-7 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold"
+                                    >
+                                      +
+                                    </button>
                                   </div>
                                 </div>
 
-                                {/* Children */}
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <p className="font-bold">Children</p>
-                                    <p className="text-[11px] text-gray-400">Age 2-11</p>
+                                    <p className="text-[11px] text-gray-400">2-11 years</p>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <button 
-                                      type="button" 
-                                      disabled={flightForm.passengers.children <= 0} 
-                                      onClick={() => setFlightForm({
-                                        ...flightForm, 
-                                        passengers: { ...flightForm.passengers, children: flightForm.passengers.children - 1 }
-                                      })} 
-                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold disabled:opacity-50"
-                                    >-</button>
-                                    <span className="font-bold w-4 text-center">{flightForm.passengers.children}</span>
-                                    <button 
-                                      type="button" 
-                                      onClick={() => setFlightForm({
-                                        ...flightForm, 
-                                        passengers: { ...flightForm.passengers, children: flightForm.passengers.children + 1 }
-                                      })} 
-                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold"
-                                    >+</button>
+                                    <button
+                                      type="button"
+                                      disabled={flightForm.passengers.children <= 0}
+                                      onClick={() =>
+                                        setFlightForm({
+                                          ...flightForm,
+                                          passengers: {
+                                            ...flightForm.passengers,
+                                            children: flightForm.passengers.children - 1,
+                                          },
+                                        })
+                                      }
+                                      className="w-7 h-7 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold disabled:opacity-40"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="font-bold w-4 text-center">
+                                      {flightForm.passengers.children}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setFlightForm({
+                                          ...flightForm,
+                                          passengers: {
+                                            ...flightForm.passengers,
+                                            children: flightForm.passengers.children + 1,
+                                          },
+                                        })
+                                      }
+                                      className="w-7 h-7 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold"
+                                    >
+                                      +
+                                    </button>
                                   </div>
                                 </div>
 
-                                {/* Infants */}
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <p className="font-bold">Infants</p>
-                                    <p className="text-[11px] text-gray-400">Under 2</p>
+                                    <p className="text-[11px] text-gray-400">Under 2 years</p>
                                   </div>
                                   <div className="flex items-center gap-3">
-                                    <button 
-                                      type="button" 
-                                      disabled={flightForm.passengers.infants <= 0} 
-                                      onClick={() => setFlightForm({
-                                        ...flightForm, 
-                                        passengers: { ...flightForm.passengers, infants: flightForm.passengers.infants - 1 }
-                                      })} 
-                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold disabled:opacity-50"
-                                    >-</button>
-                                    <span className="font-bold w-4 text-center">{flightForm.passengers.infants}</span>
-                                    <button 
-                                      type="button" 
-                                      onClick={() => setFlightForm({
-                                        ...flightForm, 
-                                        passengers: { ...flightForm.passengers, infants: flightForm.passengers.infants + 1 }
-                                      })} 
-                                      className="w-7 h-7 bg-gray-100 rounded-lg font-bold"
-                                    >+</button>
+                                    <button
+                                      type="button"
+                                      disabled={flightForm.passengers.infants <= 0}
+                                      onClick={() =>
+                                        setFlightForm({
+                                          ...flightForm,
+                                          passengers: {
+                                            ...flightForm.passengers,
+                                            infants: flightForm.passengers.infants - 1,
+                                          },
+                                        })
+                                      }
+                                      className="w-7 h-7 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold disabled:opacity-40"
+                                    >
+                                      -
+                                    </button>
+                                    <span className="font-bold w-4 text-center">
+                                      {flightForm.passengers.infants}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        setFlightForm({
+                                          ...flightForm,
+                                          passengers: {
+                                            ...flightForm.passengers,
+                                            infants: flightForm.passengers.infants + 1,
+                                          },
+                                        })
+                                      }
+                                      className="w-7 h-7 bg-gray-100 hover:bg-gray-200 rounded-lg font-bold"
+                                    >
+                                      +
+                                    </button>
                                   </div>
                                 </div>
 
-                                <div className="pt-2 border-t border-gray-100 flex justify-end">
-                                  <button type="button" onClick={() => setShowHomePaxDropdown(false)} className="px-3 py-1.5 bg-blue-600 text-white font-bold text-xs rounded-lg shadow hover:bg-blue-700 transition">
+                                <div className="pt-2 flex justify-end">
+                                  <button
+                                    type="button"
+                                    onClick={() => setShowHomePaxDropdown(false)}
+                                    className="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl shadow hover:bg-blue-700 transition"
+                                  >
                                     Apply
                                   </button>
                                 </div>
@@ -411,182 +588,148 @@ export default function Home() {
                           )}
                         </AnimatePresence>
                       </div>
+                    </div>
 
-                      <div className="flex-1 min-w-[180px] p-4">
-                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Class</p>
+                    {/* BOTTOM CONTROL BAR: CLASS SELECTOR & CTA */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+                      <div className="w-full sm:w-auto flex items-center gap-2 border border-gray-300 rounded-2xl px-4 py-2 bg-white">
+                        <span className="text-xs font-bold text-gray-500 uppercase">Class:</span>
                         <select
                           value={flightForm.travelClass}
                           onChange={(e) =>
                             setFlightForm({ ...flightForm, travelClass: e.target.value })
                           }
-                          className="text-lg font-bold text-gray-900 w-full bg-transparent outline-none"
+                          className="bg-transparent font-bold text-sm text-gray-800 outline-none cursor-pointer"
                         >
                           <option value="ECONOMY">Economy</option>
                           <option value="PREMIUM_ECONOMY">Premium Economy</option>
                           <option value="BUSINESS">Business</option>
-                          <option value="FIRST">First</option>
+                          <option value="FIRST">First Class</option>
                         </select>
                       </div>
 
-                    </div>
-
-                    <div className="flex justify-center mt-6">
                       <button
-                        className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-10 py-4 rounded-full text-lg shadow-lg"
+                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-3.5 rounded-2xl text-base shadow-lg transition-all transform active:scale-95"
                         onClick={handleFlightSearch}
                       >
-                        SEARCH
+                        Search flights
                       </button>
                     </div>
-                  </div>
-                </>
-              ) : (
-                <>
-                  {/* 🏨 Hotel Form */}
-                  <div className="bg-white rounded-3xl shadow-xl p-6 mt-6">
-                    <h2 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                      <BedDouble className="text-blue-600" /> Find a Hotel
-                    </h2>
 
-                    <div className="flex flex-wrap items-center justify-between border rounded-2xl overflow-hidden">
-                      {/* DESTINATION */}
-                      <div className="flex-1 min-w-[260px] p-4 border-r">
-                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Destination</p>
+                  </div>
+                ) : (
+                  /* === HOTEL SEARCH FORM === */
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-center">
+                      
+                      <div className="lg:col-span-5 border border-gray-300 rounded-2xl p-3 bg-white">
+                        <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                          DESTINATION
+                        </span>
                         <input
                           placeholder="City (e.g. Dubai)"
                           value={hotelForm.destination}
-                          onChange={(e) => setHotelForm({ ...hotelForm, destination: e.target.value })}
-                          className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
+                          onChange={(e) =>
+                            setHotelForm({ ...hotelForm, destination: e.target.value })
+                          }
+                          className="w-full text-sm font-bold text-gray-900 bg-transparent outline-none mt-0.5"
                         />
-                        <p className="text-sm text-gray-400">Where do you want to stay?</p>
                       </div>
 
-                      {/* CHECK-IN DATE */}
-                      <div className="flex-1 min-w-[200px] p-4 border-r">
-                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Check-in</p>
-                        <input
-                          type="date"
-                          value={hotelForm.checkInDate}
-                          onChange={(e) => setHotelForm({ ...hotelForm, checkInDate: e.target.value })}
-                          className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
-                        />
-                        <p className="text-sm text-gray-400">
-                          {hotelForm.checkInDate ? new Date(hotelForm.checkInDate).toDateString() : ""}
-                        </p>
-                      </div>
-
-                      {/* CHECK-OUT DATE */}
-                      <div className="flex-1 min-w-[200px] p-4 border-r">
-                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Check-out</p>
-                        <input
-                          type="date"
-                          value={hotelForm.checkOutDate}
-                          onChange={(e) => setHotelForm({ ...hotelForm, checkOutDate: e.target.value })}
-                          className="text-2xl font-bold text-gray-900 w-full bg-transparent outline-none"
-                        />
-                        <p className="text-sm text-gray-400">
-                          {hotelForm.checkOutDate ? new Date(hotelForm.checkOutDate).toDateString() : ""}
-                        </p>
-                      </div>
-
-                      {/* GUESTS */}
-                      <div className="flex-1 min-w-40 p-4 border-r">
-                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Guests</p>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {hotelForm.guests} {hotelForm.guests > 1 ? "Guests" : "Guest"}
+                      <div className="lg:col-span-4 border border-gray-300 rounded-2xl p-3 flex items-center divide-x divide-gray-200 bg-white">
+                        <div className="flex-1 pr-2">
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            CHECK-IN
+                          </span>
+                          <input
+                            type="date"
+                            value={hotelForm.checkInDate}
+                            onChange={(e) =>
+                              setHotelForm({ ...hotelForm, checkInDate: e.target.value })
+                            }
+                            className="w-full text-xs sm:text-sm font-bold text-gray-900 bg-transparent outline-none cursor-pointer mt-0.5"
+                          />
                         </div>
-                        <p className="text-sm text-gray-400">Adults only</p>
+
+                        <div className="flex-1 pl-3">
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            CHECK-OUT
+                          </span>
+                          <input
+                            type="date"
+                            value={hotelForm.checkOutDate}
+                            onChange={(e) =>
+                              setHotelForm({ ...hotelForm, checkOutDate: e.target.value })
+                            }
+                            className="w-full text-xs sm:text-sm font-bold text-gray-900 bg-transparent outline-none cursor-pointer mt-0.5"
+                          />
+                        </div>
                       </div>
 
-                      {/* ROOMS */}
-                      <div className="flex-1 min-w-40 p-4">
-                        <p className="text-xs uppercase text-gray-500 font-semibold mb-1">Rooms</p>
-                        <div className="text-2xl font-bold text-gray-900">
-                          {hotelForm.rooms} {hotelForm.rooms > 1 ? "Rooms" : "Room"}
+                      <div className="lg:col-span-3 border border-gray-300 rounded-2xl p-3 flex gap-2 bg-white">
+                        <div className="flex-1">
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            GUESTS
+                          </span>
+                          <select
+                            value={hotelForm.guests}
+                            onChange={(e) =>
+                              setHotelForm({ ...hotelForm, guests: Number(e.target.value) })
+                            }
+                            className="w-full text-xs sm:text-sm font-bold text-gray-900 bg-transparent outline-none mt-0.5 cursor-pointer"
+                          >
+                            {[1, 2, 3, 4, 5, 6].map((num) => (
+                              <option key={num} value={num}>
+                                {num} {num > 1 ? "Guests" : "Guest"}
+                              </option>
+                            ))}
+                          </select>
                         </div>
-                        <p className="text-sm text-gray-400">Total rooms</p>
+
+                        <div className="flex-1 border-l border-gray-200 pl-2">
+                          <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            ROOMS
+                          </span>
+                          <select
+                            value={hotelForm.rooms}
+                            onChange={(e) =>
+                              setHotelForm({ ...hotelForm, rooms: Number(e.target.value) })
+                            }
+                            className="w-full text-xs sm:text-sm font-bold text-gray-900 bg-transparent outline-none mt-0.5 cursor-pointer"
+                          >
+                            {[1, 2, 3, 4].map((num) => (
+                              <option key={num} value={num}>
+                                {num} {num > 1 ? "Rooms" : "Room"}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
                       </div>
+
                     </div>
 
-                    {/* SEARCH BUTTON */}
-                    <div className="flex justify-center mt-6">
+                    <div className="flex justify-end pt-2">
                       <button
-                        className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-10 py-4 rounded-full text-lg shadow-lg"
+                        className="w-full sm:w-auto bg-blue-600 hover:bg-blue-700 text-white font-bold px-10 py-3.5 rounded-2xl text-base shadow-lg transition-all transform active:scale-95"
                         onClick={handleHotelSearch}
                       >
-                        SEARCH HOTELS
+                        Search hotels
                       </button>
                     </div>
                   </div>
+                )}
+              </div>
 
-                  {/* 🏨 Display Hotel Results */}
-                  {hotelResults.length > 0 && (
-                    <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mt-8 w-full max-w-7xl">
-                      {hotelResults.map((h, i) => {
-                        const rawPrice = parseFloat(h.offers?.[0]?.price?.total || 0);
-                        const priceInNaira = Math.round(rawPrice * 1500);
-                        const formattedHotelPrice = new Intl.NumberFormat('en-NG', {
-                          style: 'currency',
-                          currency: 'NGN',
-                          maximumFractionDigits: 0,
-                        }).format(priceInNaira);
-
-                        return (
-                          <div key={i} className="bg-white rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 border border-gray-100 flex flex-col">
-                            <div className="relative h-56">
-                              <img
-                                src={h.hotel?.media?.[0]?.uri || "/images/default-hotel.jpg"}
-                                alt={h.hotel?.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => (e.target.src = "/images/default-hotel.jpg")}
-                              />
-                              <div className="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full flex items-center gap-1 shadow-sm">
-                                <span className="text-orange-500 font-bold">★</span>
-                                <span className="text-sm font-bold text-gray-800">{h.rating || "4.2"}</span>
-                              </div>
-                            </div>
-
-                            <div className="p-5 flex-1 flex flex-col">
-                              <h3 className="text-xl font-bold text-gray-800 line-clamp-1 capitalize">
-                                {h.hotel?.name?.toLowerCase() || "Premium Stay"}
-                              </h3>
-                              <p className="text-gray-500 text-sm flex items-center gap-1 mt-1">
-                                <MapPin className="w-3 h-3" /> {h.hotel?.address?.cityName}, {h.hotel?.address?.countryCode}
-                              </p>
-
-                              <div className="mt-auto pt-6 flex items-end justify-between">
-                                <div>
-                                  <p className="text-xs text-gray-400 font-semibold uppercase tracking-wider">Price per night</p>
-                                  <p className="text-2xl font-black text-blue-900">{priceInNaira > 0 ? formattedHotelPrice : "Check Price"}</p>
-                                </div>
-                                <button
-                                  onClick={() =>
-                                    navigate(
-                                      `/booking?hotel=${encodeURIComponent(h.hotel?.name || "")}&checkIn=${hotelForm.checkInDate}&checkOut=${hotelForm.checkOutDate}&guests=${hotelForm.guests}&price=${priceInNaira}`
-                                    )
-                                  }
-                                  className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-bold transition shadow-md active:scale-95"
-                                >
-                                  Book Now
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </>
-              )}
             </div>
+
           </div>
         </div>
-
-        <WhyBookWithUs /> 
-        <TrendingHotels /> 
+        
+        <WhyBookWithUs />
+        <TrendingHotels />
         <AdventureActivities />
-        <Tours/>
+        <Tours />
       </div>
-    </>  
+    </>
   );
 }

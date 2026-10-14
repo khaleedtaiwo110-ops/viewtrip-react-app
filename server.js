@@ -4,7 +4,7 @@ import dotenv from "dotenv";
 import Amadeus from "amadeus";
 import axios from "axios";
 import nodemailer from "nodemailer";
-import sgMail from "@sendgrid/mail";
+
 
 dotenv.config();
 
@@ -21,9 +21,12 @@ app.use(
 app.use(express.json());
 
 // ✅ Initialize Amadeus client
+// Note: If you are using Production keys, make sure hostname: 'production' is uncommented.
+// If you are using Test keys, leave hostname out or set to 'test'.
 const amadeus = new Amadeus({
   clientId: process.env.AMADEUS_CLIENT_ID,
   clientSecret: process.env.AMADEUS_CLIENT_SECRET,
+  hostname: 'test' // <--- Forces it to hit the live global production servers
 });
 
 // ✅ City or Airport Search
@@ -45,34 +48,43 @@ app.get("/api/search", async (req, res) => {
 
 // ✅ Flight Offers Search
 app.get('/api/flight-offers', async (req, res) => {
+  console.log("🔍 DEBUG QUERY RECEIVED:", req.query);
+
   try {
-    // 1. Destructure exactly what the React app is sending
     const { origin, destination, date, travelClass, adults, children, infants } = req.query;
 
-    // 2. Build out the query object dynamically
+    if (!origin || !destination || !date) {
+      return res.status(400).json({ 
+        error: "Missing required flight parameters (origin, destination, date)." 
+      });
+    }
+
     const searchParams = {
-      originLocationCode: origin,
-      destinationLocationCode: destination,
+      originLocationCode: origin.toUpperCase().trim(),
+      destinationLocationCode: destination.toUpperCase().trim(),
       departureDate: date,
-      travelClass: travelClass || 'ECONOMY',
-      adults: adults || '1', // fallback default
+      travelClass: (travelClass || 'ECONOMY').toUpperCase(),
+      adults: String(adults || 1),
     };
 
-    // 3. Only append children/infants if they exist and are greater than 0
-    if (children && parseInt(children) > 0) {
-      searchParams.children = children;
-    }
-    if (infants && parseInt(infants) > 0) {
-      searchParams.infants = infants;
-    }
+    console.log("🚀 Dispatching clean search params to Amadeus:", searchParams);
 
-    // 4. Dispatch to Amadeus SDK
+    // Make sure this is awaited properly!
     const response = await amadeus.shopping.flightOffersSearch.get(searchParams);
     
+    console.log("✅ Flight offers fetched successfully!");
     res.json(response.data);
+    
   } catch (error) {
-    console.error("Amadeus Search Error:", error);
-    res.status(500).json({ error: error.message });
+    const errorDetails = error.description || error.response?.data || error.response || error.message || error;
+    console.error("❌ FULL AMADEUS ERROR OBJECT:", JSON.stringify(errorDetails, null, 2));
+
+    const errorDetail = error.description?.[0]?.detail || 
+                        error.response?.data?.errors?.[0]?.detail || 
+                        error.message || 
+                        "Failed to fetch flight offers from provider.";
+
+    res.status(500).json({ error: errorDetail });
   }
 });
 
@@ -92,8 +104,7 @@ app.post("/api/book-flight", async (req, res) => {
   }
 });
 
-// ✅ 🆕 Send Booking Email + Confirmation to Customer
-
+// ✅ Send Booking Email + Confirmation to Customer
 app.post("/api/send-booking", async (req, res) => {
   const booking = req.body;
   console.log("📩 Booking received:", booking);
@@ -109,7 +120,6 @@ app.post("/api/send-booking", async (req, res) => {
       },
     });
 
-    // === ADMIN EMAIL ===
     const adminMail = {
       from: `ViewTrip Travels <no-reply@viewtriptravels.com>`,
       to: "khaleedtaiwo110@gmail.com",
@@ -123,7 +133,6 @@ app.post("/api/send-booking", async (req, res) => {
       `,
     };
 
-    // === CUSTOMER EMAIL ===
     const customerMail = {
       from: `ViewTrip Travels <no-reply@viewtriptravels.com>`,
       to: booking.email,

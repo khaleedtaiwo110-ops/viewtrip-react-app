@@ -142,7 +142,9 @@ export default function FlightOffers() {
             setResults(res.data);
           }
         } catch (err) {
+          console.error("Flight search error details:", err);
           const serverMessage = err.response?.data?.error || err.response?.data?.message;
+          
           if (serverMessage) {
             setError(`Error: ${serverMessage}`);
           } else if (err.code === "ECONNABORTED") {
