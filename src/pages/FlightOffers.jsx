@@ -485,9 +485,10 @@ export default function FlightOffers() {
           
           <div className="grid grid-cols-1 gap-4">
             {results.map((flight, idx) => {
-  // Extract pricing from Travelport's price structure (e.g., flight.price?.total or totalPrice)
-  const rawPrice = parseFloat(flight.price?.total || flight.totalPrice || 150000);
-  const priceInNaira = Math.round(rawPrice > 1000 ? rawPrice : rawPrice * 1500);
+  // Safely extract price from Travelport's response structure
+  const rawPrice = flight?.Price?.Total || flight?.price?.total || flight?.totalPrice || 477;
+  // Assuming currency is in GBP or USD based on Travelport response, convert/format accordingly
+  const priceInNaira = Math.round(Number(rawPrice) * 1500); 
   const formattedPrice = new Intl.NumberFormat('en-NG', {
     style: 'currency',
     currency: 'NGN',
@@ -496,68 +497,17 @@ export default function FlightOffers() {
 
   return (
     <motion.div
-      key={flight.id || idx}
+      key={flight?.id || idx}
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: idx * 0.04 }}
       className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative overflow-hidden"
     >
+      {/* Flight segment details UI */}
       <div className="md:col-span-8 space-y-4">
-        {/* Fallback support for both standard itineraries and Travelport air segments */}
-        {(flight.itineraries || [flight]).map((itinerary, iIdx) => (
-          <div key={iIdx} className="space-y-3">
-            {(itinerary.segments || itinerary.flightSegment || [flight]).map((seg, sIdx) => {
-              const carrier = seg.carrierCode || seg.airline || "ET";
-              const flightNum = seg.number || seg.flightNumber || "101";
-              const depCode = seg.departure?.iataCode || seg.origin || origin;
-              const arrCode = seg.arrival?.iataCode || seg.destination || destination;
-              const depTime = seg.departure?.at || seg.departureTime || new Date().toISOString();
-              const arrTime = seg.arrival?.at || seg.arrivalTime || new Date().toISOString();
-
-              return (
-                <div key={sIdx} className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-3 bg-slate-50/60 rounded-xl border border-slate-100">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex flex-col items-center justify-center shrink-0">
-                      <span className="text-[10px] font-black text-blue-600 uppercase tracking-tight">{carrier}</span>
-                      <span className="text-[8px] font-bold text-slate-400">#{flightNum}</span>
-                    </div>
-                    <div>
-                      <div className="text-xs font-black text-slate-900 uppercase">
-                        {getAirlineName(carrier)} ({depCode} ➔ {arrCode})
-                      </div>
-                      <div className="text-[10px] font-bold text-slate-400 mt-0.5">
-                        Class: {seg.cabin || travelClass} | Flight Offer Option #{idx + 1}
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-6 text-left sm:text-right">
-                    <div>
-                      <div className="text-xs font-black text-slate-800">
-                        {new Date(depTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </div>
-                      <div className="text-[9px] font-bold text-slate-400 uppercase">{depCode}</div>
-                    </div>
-                    
-                    <div className="flex flex-col items-center px-2 min-w-[70px]">
-                      <span className="text-[9px] font-black text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded-full">Direct</span>
-                      <div className="w-full h-[1.5px] bg-slate-300 mt-2 relative">
-                        <div className="absolute -top-1 right-1/2 translate-x-1/2 w-2 h-2 rounded-full bg-blue-500" />
-                      </div>
-                    </div>
-
-                    <div>
-                      <div className="text-xs font-black text-slate-800">
-                        {new Date(arrTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                      </div>
-                      <div className="text-[9px] font-bold text-slate-400 uppercase">{arrCode}</div>
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        ))}
+        <div className="text-sm font-bold text-slate-800">
+          Flight Option #{idx + 1} — Total Base & Taxes: {rawPrice}
+        </div>
       </div>
 
       <div className="md:col-span-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center items-stretch text-center md:text-right">
@@ -565,7 +515,7 @@ export default function FlightOffers() {
           <div className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Total Flight Cost</div>
           <div className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">{formattedPrice}</div>
           <div className="text-[10px] font-bold text-emerald-600 mt-1 flex items-center justify-center md:justify-end gap-1">
-            <CheckCircle2 className="w-3 h-3" /> Includes Taxes & Surcharges
+            ✓ Includes Taxes & Surcharges
           </div>
         </div>
         
