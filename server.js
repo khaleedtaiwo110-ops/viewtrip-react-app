@@ -1,10 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import Amadeus from "amadeus";
 import axios from "axios";
 import nodemailer from "nodemailer";
-
 
 dotenv.config();
 
@@ -20,14 +18,32 @@ app.use(
 );
 app.use(express.json());
 
-// ✅ Initialize Amadeus client
-// Note: If you are using Production keys, make sure hostname: 'production' is uncommented.
-// If you are using Test keys, leave hostname out or set to 'test'.
-const amadeus = new Amadeus({
-  clientId: process.env.AMADEUS_CLIENT_ID,
-  clientSecret: process.env.AMADEUS_CLIENT_SECRET,
-  hostname: 'test' // <--- Forces it to hit the live global production servers
-});
+// ✅ Helper Function: Get Travelport OAuth Token (Password Grant Type with .net endpoint)
+async function getTravelportToken() {
+  try {
+    const params = new URLSearchParams();
+    params.append("grant_type", "password");
+    params.append("username", process.env.TRAVELPORT_USERNAME);
+    params.append("password", process.env.TRAVELPORT_PASSWORD);
+    params.append("client_id", process.env.TRAVELPORT_CLIENT_ID);
+    params.append("client_secret", process.env.TRAVELPORT_CLIENT_SECRET);
+
+    const response = await axios.post(
+      "https://auth.pp.travelport.net/oauth/token",
+      params,
+      {
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        }
+      }
+    );
+    console.log("🔑 Travelport token generated successfully!");
+    return response.data.access_token;
+  } catch (error) {
+    console.error("❌ Travelport Auth Error:", error.response?.data || error.message);
+    throw new Error("Failed to authenticate with Travelport API");
+  }
+}
 
 // ✅ City or Airport Search
 app.get("/api/search", async (req, res) => {
@@ -35,23 +51,19 @@ app.get("/api/search", async (req, res) => {
   if (!keyword) return res.status(400).json({ error: "Missing keyword" });
 
   try {
-    const response = await amadeus.referenceData.locations.get({
-      keyword,
-      subType: "CITY,AIRPORT",
-    });
-    res.json(response.data);
+    res.json([{ name: keyword.toUpperCase(), iataCode: keyword.toUpperCase() }]);
   } catch (error) {
-    console.error("❌ Amadeus search error:", error);
+    console.error("❌ Search error:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// ✅ Flight Offers Search
+// ✅ Flight Offers Search using Travelport TripServices
 app.get('/api/flight-offers', async (req, res) => {
-  console.log("🔍 DEBUG QUERY RECEIVED:", req.query);
+  console.log("🔍 DEBUG QUERY RECEIVED for Travelport:", req.query);
 
   try {
-    const { origin, destination, date, travelClass, adults, children, infants } = req.query;
+    const { origin, destination, date, adults } = req.query;
 
     if (!origin || !destination || !date) {
       return res.status(400).json({ 
@@ -59,32 +71,62 @@ app.get('/api/flight-offers', async (req, res) => {
       });
     }
 
-    const searchParams = {
-      originLocationCode: origin.toUpperCase().trim(),
-      destinationLocationCode: destination.toUpperCase().trim(),
-      departureDate: date,
-      travelClass: (travelClass || 'ECONOMY').toUpperCase(),
-      adults: String(adults || 1),
+    // 1. Get OAuth Bearer Token
+    const accessToken = await getTravelportToken();
+
+    // 2. Exact Dashboard curl Payload Structure
+    const searchPayload = {
+      "@type": "CatalogProductOfferingsQueryRequest",
+      "CatalogProductOfferingsRequest": {
+        "@type": "CatalogProductOfferingsRequestAir",
+        "maxNumberOfUpsellsToReturn": 4,
+        "contentSourceList": ["GDS"],
+        "PassengerCriteria": [
+          {
+            "@type": "PassengerCriteria",
+            "number": parseInt(adults || 1),
+            "passengerTypeCode": "ADT"
+          }
+        ],
+        "SearchCriteriaFlight": [
+          {
+            "@type": "SearchCriteriaFlight",
+            "departureDate": date,
+            "From": {
+              "value": origin.toUpperCase()
+            },
+            "To": {
+              "value": destination.toUpperCase()
+            }
+          }
+        ]
+      }
     };
 
-    console.log("🚀 Dispatching clean search params to Amadeus:", searchParams);
+    console.log("🚀 Dispatching search request to Travelport API...");
 
-    // Make sure this is awaited properly!
-    const response = await amadeus.shopping.flightOffersSearch.get(searchParams);
-    
-    console.log("✅ Flight offers fetched successfully!");
+    // 3. Dispatch to Travelport API Endpoint with Required Custom Headers
+    const response = await axios.post(
+      process.env.TRAVELPORT_BASE_URL || "https://api.pp.travelport.net/11/air/catalog/search/catalogproductofferings",
+      searchPayload,
+      {
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'TVP-PCC-Core': '7K99_1G',
+          'TraceId': 'TraceId_' + Date.now()
+        }
+      }
+    );
+
+    console.log("✅ Travelport flight offers fetched successfully!");
     res.json(response.data);
     
   } catch (error) {
-    const errorDetails = error.description || error.response?.data || error.response || error.message || error;
-    console.error("❌ FULL AMADEUS ERROR OBJECT:", JSON.stringify(errorDetails, null, 2));
-
-    const errorDetail = error.description?.[0]?.detail || 
-                        error.response?.data?.errors?.[0]?.detail || 
-                        error.message || 
-                        "Failed to fetch flight offers from provider.";
-
-    res.status(500).json({ error: errorDetail });
+    const errorDetails = error.response?.data || error.message;
+    console.error("❌ Travelport API Error:", JSON.stringify(errorDetails, null, 2));
+    res.status(500).json({ error: "Failed to fetch flight offers from Travelport provider." });
   }
 });
 
@@ -104,7 +146,7 @@ app.post("/api/book-flight", async (req, res) => {
   }
 });
 
-// ✅ Send Booking Email + Confirmation to Customer
+// ✅ Send Booking Email
 app.post("/api/send-booking", async (req, res) => {
   const booking = req.body;
   console.log("📩 Booking received:", booking);
@@ -115,14 +157,14 @@ app.post("/api/send-booking", async (req, res) => {
       port: 25,
       secure: false,
       auth: {
-        user: "apikey",
-        pass: "apikey",
+        user: process.env.EMAIL_USER || "apikey",
+        pass: process.env.EMAIL_PASS || "apikey",
       },
     });
 
     const adminMail = {
       from: `ViewTrip Travels <no-reply@viewtriptravels.com>`,
-      to: "khaleedtaiwo110@gmail.com",
+      to: process.env.EMAIL_RECEIVER || "khaleedtaiwo110@gmail.com",
       subject: `🧳 New ${booking.type?.toUpperCase()} Booking from ${booking.name}`,
       html: `
         <h2>New Booking Received</h2>
