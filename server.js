@@ -125,16 +125,16 @@ app.get('/api/flight-offers', async (req, res) => {
     const rawData = response.data;
     console.log("✅ Travelport flight offers fetched successfully!");
     
-    // Extract the actual offers array safely from Travelport's nested structure
-    const offerings = 
+    // Safely extract the real offerings array from Travelport's nested structure
+    const flightOffersArray = 
       rawData.CatalogProductOfferingsResponse?.catalogProductOfferings ||
       rawData.catalogProductOfferings ||
       rawData.productOffering ||
       rawData.data ||
-      rawData;
+      (Array.isArray(rawData) ? rawData : [rawData]);
 
-    // Send back a guaranteed array or a clean wrapper object
-    res.json(Array.isArray(offerings) ? offerings : [offerings]);
+    // Send the real array back to the frontend
+    res.json(flightOffersArray);
     
   } catch (error) {
     const errorDetails = error.response?.data || error.message;

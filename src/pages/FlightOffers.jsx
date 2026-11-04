@@ -477,65 +477,64 @@ export default function FlightOffers() {
 
         {/* --- SEARCH RESULTS LISTING SEGMENT --- */}
         <div className="mt-10 space-y-6">
-          {flightList.length > 0 && (
-            <h3 className="text-lg font-black text-slate-900 px-1">Available Flights Match Matrix</h3>
-          )}
-          
-          {flightList.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-500 font-medium">
-              {results === null || loading ? "Searching for flights..." : "No flight offers available for this route. Try another date or city."}
+  {flightList.length > 0 && (
+    <h3 className="text-lg font-black text-slate-900 px-1">Available Flights Match Matrix</h3>
+  )}
+  
+  {flightList.length === 0 ? (
+    <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-500 font-medium">
+      {results === null || loading ? "Searching for flights..." : "No flight offers available for this route. Try another date or city."}
+    </div>
+  ) : (
+    <div className="space-y-4">
+      {flightList.map((flight, idx) => {
+        // Extract real price from Travelport payload with zero dummy fallbacks
+        const rawPrice = flight?.price?.total || flight?.Price?.Total || flight?.totalPrice || 0;
+        const formattedPrice = `₦${Number(rawPrice * 1500).toLocaleString()}`;
+        
+        // Extract real airline/carrier code
+        const carrierCode = flight?.itineraries?.[0]?.segments?.[0]?.carrierCode || flight?.validatingAirlineCodes?.[0] || "GDS";
+        const airlineTitle = getAirlineName(carrierCode);
+
+        return (
+          <div
+            key={flight?.id || idx}
+            className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+          >
+            <div className="space-y-1">
+              <div className="text-xs font-black uppercase text-orange-600 tracking-wider">
+                Option #{idx + 1} • {airlineTitle}
+              </div>
+              <div className="text-lg font-extrabold text-slate-900">
+                {flight?.itineraries?.[0]?.segments?.[0]?.departure?.iataCode} ➔ {flight?.itineraries?.[0]?.segments?.[slice => -1]?.arrival?.iataCode || "Destination"}
+              </div>
+              <div className="text-xs text-slate-500">
+                Carrier Code: {carrierCode} • Includes mandatory taxes & surcharges.
+              </div>
             </div>
-          ) : (
-            <div className="space-y-4">
-              {flightList.map((flight, idx) => {
-                // Safely extract price primitives with multiple fallbacks
-                const rawPrice = flight?.Price?.Total || flight?.price?.total || flight?.Total || 477;
-                const formattedPrice = `₦${Number(rawPrice * 1500).toLocaleString()}`;
-                
-                // Ensure brand name is strictly a primitive string
-                const brandName = typeof flight?.Brand === 'string' 
-                  ? flight.Brand 
-                  : flight?.Brand?.BrandRef || flight?.contentSource || "Standard GDS Offer";
 
-                return (
-                  <div
-                    key={flight?.id || idx}
-                    className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-                  >
-                    <div className="space-y-1">
-                      <div className="text-xs font-black uppercase text-orange-600 tracking-wider">
-                        Option #{idx + 1} • {String(brandName)}
-                      </div>
-                      <div className="text-lg font-extrabold text-slate-900">
-                        Verified Flight Route
-                      </div>
-                      <div className="text-xs text-slate-500">
-                        Includes all mandatory taxes and carrier surcharges.
-                      </div>
-                    </div>
+            <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
+              <div className="text-left md:text-right">
+                <div className="text-[10px] font-black uppercase text-slate-400">Total Price</div>
+                <div className="text-2xl font-black text-slate-900">{formattedPrice}</div>
+              </div>
 
-                    <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
-                      <div className="text-left md:text-right">
-                        <div className="text-[10px] font-black uppercase text-slate-400">Total Price</div>
-                        <div className="text-2xl font-black text-slate-900">{formattedPrice}</div>
-                      </div>
-
-                      <button
-                        onClick={() => {
-                          setSelectedFlight(flight);
-                          setShowBookingForm(true);
-                        }}
-                        className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow transition transform active:scale-95"
-                      >
-                        Select Flight
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
+              <button
+                onClick={() => {
+                  setSelectedFlight(flight);
+                  setShowBookingForm(true);
+                }}
+                className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow transition transform active:scale-95"
+              >
+                Select Flight
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        );
+      })}
+    </div>
+  )}
+</div>
       </div>
 
       {/* AIRPORT SELECTOR MODAL */}
