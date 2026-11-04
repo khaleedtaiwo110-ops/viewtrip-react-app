@@ -59,7 +59,9 @@ app.get("/api/search", async (req, res) => {
       "paris": { name: "Paris (CDG)", iataCode: "CDG" },
       "lagos": { name: "Lagos (LOS)", iataCode: "LOS" },
       "dubai": { name: "Dubai (DXB)", iataCode: "DXB" },
-      "glasgow": { name: "Glasgow (GLA)", iataCode: "GLA" }
+      "glasgow": { name: "Glasgow (GLA)", iataCode: "GLA" },
+      "abuja": { name: "Abuja (ABV)", iataCode: "ABV" },
+      "addis ababa": { name: "Addis Ababa (ADD)", iataCode: "ADD" }
     };
 
     const matches = Object.entries(airportDatabase)
@@ -90,13 +92,13 @@ app.get('/api/flight-offers', async (req, res) => {
     // 1. Get OAuth Bearer Token
     const accessToken = await getTravelportToken();
 
-    // 2. Canonical Travelport Catalog Product Offerings Payload
+    // 2. Canonical Travelport Catalog Product Offerings Payload (with corrected content sources)
     const searchPayload = {
       "@type": "CatalogProductOfferingsQueryRequest",
       "CatalogProductOfferingsRequest": {
         "@type": "CatalogProductOfferingsRequestAir",
         "maxNumberOfUpsellsToReturn": 4,
-        "contentSourceList": ["GDS"],
+        "contentSourceList": ["GDS", "NDC"],
         "PassengerCriteria": [
           {
             "@type": "PassengerCriteria",
@@ -140,14 +142,18 @@ app.get('/api/flight-offers', async (req, res) => {
     
     // ✅ Safely extract offers array matching Travelport's PascalCase schema structure
     const rawData = response.data;
-    const catalogResponse = rawData?.CatalogProductOfferingsResponse || rawData;
+    const catalogResponse = rawData?.CatalogProductOfferingsResponse || rawData?.CatalogProductOfferings || rawData;
     
     const flightOffersArray = 
       catalogResponse?.CatalogProductOfferings?.CatalogProductOffering ||
+      catalogResponse?.CatalogProductOffering ||
       catalogResponse?.catalogProductOfferings ||
-      catalogResponse?.productOffering ||
       rawData?.CatalogProductOfferings?.CatalogProductOffering ||
+      rawData?.catalogProductOfferings ||
+      rawData?.productOffering ||
       (Array.isArray(rawData) ? rawData : [rawData]);
+
+    console.log(`✈️ Successfully extracted ${Array.isArray(flightOffersArray) ? flightOffersArray.length : 1} offer items.`);
 
     res.json(flightOffersArray);
     
