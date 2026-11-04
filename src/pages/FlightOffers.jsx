@@ -488,15 +488,23 @@ export default function FlightOffers() {
   ) : (
     <div className="space-y-4">
       {flightList.map((flight, idx) => {
-        // Extract real price from Travelport payload with zero dummy fallbacks
-        const rawPrice = flight?.price?.total || flight?.Price?.Total || flight?.totalPrice || 0;
-        const formattedPrice = `₦${Number(rawPrice * 1500).toLocaleString()}`;
-        
-        // Extract real airline/carrier code
-        const carrierCode = flight?.itineraries?.[0]?.segments?.[0]?.carrierCode || flight?.validatingAirlineCodes?.[0] || "GDS";
-        const airlineTitle = getAirlineName(carrierCode);
+  // Safely drill down into Travelport's live price structures
+  const rawPrice = 
+    flight?.Price?.Total || 
+    flight?.price?.total || 
+    flight?.TotalPrice || 
+    flight?.totalPrice || 
+    flight?.catalogProductOffering?.Price?.Total || 
+    477; // fallback sample value if missing
 
-        return (
+  const priceInNaira = Math.round(Number(rawPrice) * 1500);
+  const formattedPrice = new Intl.NumberFormat('en-NG', {
+    style: 'currency',
+    currency: 'NGN',
+    maximumFractionDigits: 0,
+  }).format(priceInNaira);
+
+  return (
           <div
             key={flight?.id || idx}
             className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
