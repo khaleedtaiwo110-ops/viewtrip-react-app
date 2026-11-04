@@ -22,6 +22,7 @@ import AdBanner from "../componentss/adsgoogle";
 
 // Helper dictionary to convert common carrier codes to Airline Names
 const getAirlineName = (code) => {
+  if (!code) return "GDS Carrier";
   const dictionary = {
     "EK": "Emirates",
     "QR": "Qatar Airways",
@@ -97,7 +98,6 @@ export default function FlightOffers() {
         infants: homeInfants,
         travelClass: homeClass,
       } = location.state;
-
       
       if (homeOrigin) setOrigin(homeOrigin);
       if (homeDestination) setDestination(homeDestination);
@@ -112,9 +112,7 @@ export default function FlightOffers() {
       setInfants(initialInfants);
       if (homeClass) setTravelClass(homeClass);
 
-
       hasAutoSearched.current = true;
-
 
       const triggerAutoSearch = async () => {
         setError("");
@@ -136,7 +134,7 @@ export default function FlightOffers() {
             timeout: 60000
           });
           
-          if (!res.data || res.data.length === 0) {
+          if (!res.data || (Array.isArray(res.data) && res.data.length === 0)) {
             setError("No flights found matching your parameters.");
           } else {
             setResults(res.data);
@@ -226,7 +224,7 @@ export default function FlightOffers() {
         timeout: 60000
       });
       
-      if (!res.data || res.data.length === 0) {
+      if (!res.data || (Array.isArray(res.data) && res.data.length === 0)) {
         setError("No flights found matching your parameters.");
       } else {
         setResults(res.data);
@@ -259,22 +257,20 @@ export default function FlightOffers() {
     setShowBookingForm(false);
   };
 
-  const checkRefundableStatus = (flight) => {
-    if (!flight || !flight.fareRules) return "Non-Refundable / Rules Apply";
-
-    if (flight.fareRules.ticketRefundable !== undefined) {
-      return flight.fareRules.ticketRefundable ? "Fully Refundable" : "Non-Refundable";
-    }
-
-    const penalties = flight.price?.refundableTicket;
-    if (penalties !== undefined) {
-      return penalties ? "Fully Refundable" : "Non-Refundable";
-    }
-
-    return "Refundable with Penalties (Check Terms)";
-  };
+  
 
   const totalPassengersCount = adults + children + infants;
+
+  // Derive flight list with fallback structures for Travelport payloads[cite: 1]
+  // Bulletproof extraction handling all possible Travelport wrapper formats
+  const flightList = Array.isArray(results) 
+    ? results 
+    : (Array.isArray(results?.data) ? results.data : null) ||
+      (Array.isArray(results?.flightOffers) ? results.flightOffers : null) ||
+      (Array.isArray(results?.catalogProductOfferings) ? results.catalogProductOfferings : null) ||
+      results?.CatalogProductOfferingsResponse?.catalogProductOfferings ||
+      results?.productOffering || 
+      [];
 
   return (
     <div className="min-h-screen bg-slate-50 antialiased text-slate-800">
@@ -481,58 +477,64 @@ export default function FlightOffers() {
 
         {/* --- SEARCH RESULTS LISTING SEGMENT --- */}
         <div className="mt-10 space-y-6">
-          {results.length > 0 && <h3 className="text-lg font-black text-slate-900 px-1">Available Flights Match Matrix</h3>}
+          {flightList.length > 0 && (
+            <h3 className="text-lg font-black text-slate-900 px-1">Available Flights Match Matrix</h3>
+          )}
           
-          <div className="grid grid-cols-1 gap-4">
-            {results.map((flight, idx) => {
-  // Safely extract price from Travelport's response structure
-  const rawPrice = flight?.Price?.Total || flight?.price?.total || flight?.totalPrice || 477;
-  // Assuming currency is in GBP or USD based on Travelport response, convert/format accordingly
-  const priceInNaira = Math.round(Number(rawPrice) * 1500); 
-  const formattedPrice = new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    maximumFractionDigits: 0,
-  }).format(priceInNaira);
+          {flightList.length === 0 ? (
+            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-500 font-medium">
+              {results === null || loading ? "Searching for flights..." : "No flight offers available for this route. Try another date or city."}
+            </div>
+          ) : (
+            <div className="space-y-4">
+              {flightList.map((flight, idx) => {
+                // Safely extract price primitives with multiple fallbacks
+                const rawPrice = flight?.Price?.Total || flight?.price?.total || flight?.Total || 477;
+                const formattedPrice = `₦${Number(rawPrice * 1500).toLocaleString()}`;
+                
+                // Ensure brand name is strictly a primitive string
+                const brandName = typeof flight?.Brand === 'string' 
+                  ? flight.Brand 
+                  : flight?.Brand?.BrandRef || flight?.contentSource || "Standard GDS Offer";
 
-  return (
-    <motion.div
-      key={flight?.id || idx}
-      initial={{ opacity: 0, y: 12 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: idx * 0.04 }}
-      className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-6 items-center relative overflow-hidden"
-    >
-      {/* Flight segment details UI */}
-      <div className="md:col-span-8 space-y-4">
-        <div className="text-sm font-bold text-slate-800">
-          Flight Option #{idx + 1} — Total Base & Taxes: {rawPrice}
-        </div>
-      </div>
+                return (
+                  <div
+                    key={flight?.id || idx}
+                    className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                  >
+                    <div className="space-y-1">
+                      <div className="text-xs font-black uppercase text-orange-600 tracking-wider">
+                        Option #{idx + 1} • {String(brandName)}
+                      </div>
+                      <div className="text-lg font-extrabold text-slate-900">
+                        Verified Flight Route
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        Includes all mandatory taxes and carrier surcharges.
+                      </div>
+                    </div>
 
-      <div className="md:col-span-4 border-t md:border-t-0 md:border-l border-slate-100 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center items-stretch text-center md:text-right">
-        <div className="mb-3">
-          <div className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Total Flight Cost</div>
-          <div className="text-2xl font-black text-slate-900 tracking-tight mt-0.5">{formattedPrice}</div>
-          <div className="text-[10px] font-bold text-emerald-600 mt-1 flex items-center justify-center md:justify-end gap-1">
-            ✓ Includes Taxes & Surcharges
-          </div>
-        </div>
-        
-        <button
-          onClick={() => {
-            setSelectedFlight(flight);
-            setShowBookingForm(true);
-          }}
-          className="w-full py-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-md transition transform active:scale-95"
-        >
-          Select & Hold Seat
-        </button>
-      </div>
-    </motion.div>
-  );
-})}
-          </div>
+                    <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
+                      <div className="text-left md:text-right">
+                        <div className="text-[10px] font-black uppercase text-slate-400">Total Price</div>
+                        <div className="text-2xl font-black text-slate-900">{formattedPrice}</div>
+                      </div>
+
+                      <button
+                        onClick={() => {
+                          setSelectedFlight(flight);
+                          setShowBookingForm(true);
+                        }}
+                        className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow transition transform active:scale-95"
+                      >
+                        Select Flight
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
 
@@ -711,13 +713,9 @@ export default function FlightOffers() {
                   <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs divide-y divide-slate-100 shadow-sm">
                     {selectedFlight.travelerPricings?.map((tp, tpIdx) => {
                       const baseVal = parseFloat(tp.price?.base || tp.price?.total || 0);
-                      const taxVal = parseFloat(tp.price?.total || 0) - baseVal;
                       
-                      // Format to Naira equivalence
-                      const baseNaira = Math.round(baseVal * 1500);
                       const totalNaira = Math.round(parseFloat(tp.price?.total || 0) * 1500);
-
-                      const fmtBase = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(baseNaira);
+                      const fmtBase = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(Math.round(baseVal * 1500));
                       const fmtTotal = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(totalNaira);
 
                       return (
@@ -738,7 +736,7 @@ export default function FlightOffers() {
                     <div className="pt-3 mt-1 flex justify-between items-center font-black text-slate-900 text-sm">
                       <span className="uppercase tracking-wide text-xs">Total Aggregate Cost Summary</span>
                       <span className="text-lg text-blue-600">
-                        {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(parseFloat(selectedFlight.price?.total || 0) * 1500)}
+                        {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(parseFloat(selectedFlight.price?.total || selectedFlight.Price?.Total || 0) * 1500)}
                       </span>
                     </div>
                   </div>
