@@ -75,7 +75,7 @@ app.get('/api/flight-offers', async (req, res) => {
     // 1. Get OAuth Bearer Token
     const accessToken = await getTravelportToken();
 
-    // 2. Fully Populated Live Travelport Payload
+    // 2. Canonical Travelport Catalog Product Offerings Payload
     const searchPayload = {
       "@type": "CatalogProductOfferingsQueryRequest",
       "CatalogProductOfferingsRequest": {
@@ -104,9 +104,9 @@ app.get('/api/flight-offers', async (req, res) => {
       }
     };
 
-    console.log("🚀 Dispatching live search request to Travelport API...");
+    console.log("🚀 Dispatching search request to Travelport API...");
 
-    // 3. Dispatch to Travelport API Endpoint (.net pre-production domain)
+    // 3. Dispatch to Travelport API Endpoint with Required Custom Headers
     const response = await axios.post(
       process.env.TRAVELPORT_BASE_URL || "https://api.pp.travelport.net/11/air/catalog/search/catalogproductofferings",
       searchPayload,
@@ -121,11 +121,10 @@ app.get('/api/flight-offers', async (req, res) => {
       }
     );
 
-    console.log("✅ Travelport live flight offers fetched successfully!");
-
-    const rawData = response.data;
+    console.log("✅ Travelport flight offers fetched successfully!");
     
-    // Unwrap Travelport's nested structure safely into an array
+    // Safely extract offers array
+    const rawData = response.data;
     const catalogResponse = rawData?.CatalogProductOfferingsResponse || rawData;
     const flightOffersArray = 
       catalogResponse?.catalogProductOfferings ||
