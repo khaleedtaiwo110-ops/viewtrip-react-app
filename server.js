@@ -51,13 +51,28 @@ app.get("/api/search", async (req, res) => {
   if (!keyword) return res.status(400).json({ error: "Missing keyword" });
 
   try {
-    res.json([{ name: keyword.toUpperCase(), iataCode: keyword.toUpperCase() }]);
+    const query = keyword.toLowerCase();
+    
+    const airportDatabase = {
+      "new york": { name: "New York (JFK)", iataCode: "JFK" },
+      "london": { name: "London (LHR)", iataCode: "LHR" },
+      "paris": { name: "Paris (CDG)", iataCode: "CDG" },
+      "lagos": { name: "Lagos (LOS)", iataCode: "LOS" },
+      "dubai": { name: "Dubai (DXB)", iataCode: "DXB" },
+      "glasgow": { name: "Glasgow (GLA)", iataCode: "GLA" }
+    };
+
+    const matches = Object.entries(airportDatabase)
+      .filter(([key, val]) => key.includes(query) || keyword.toUpperCase() === val.iataCode)
+      .map(([_, val]) => val);
+
+    const results = matches.length > 0 ? matches : [{ name: keyword.toUpperCase(), iataCode: keyword.toUpperCase() }];
+    res.json(results);
   } catch (error) {
     console.error("❌ Search error:", error);
     res.status(500).json({ error: error.message });
   }
 });
-
 
 // ✅ Flight Offers Search using Travelport TripServices
 app.get('/api/flight-offers', async (req, res) => {
@@ -123,14 +138,15 @@ app.get('/api/flight-offers', async (req, res) => {
 
     console.log("✅ Travelport flight offers fetched successfully!");
     
-    // Safely extract offers array
+    // ✅ Safely extract offers array matching Travelport's PascalCase schema structure
     const rawData = response.data;
     const catalogResponse = rawData?.CatalogProductOfferingsResponse || rawData;
+    
     const flightOffersArray = 
+      catalogResponse?.CatalogProductOfferings?.CatalogProductOffering ||
       catalogResponse?.catalogProductOfferings ||
       catalogResponse?.productOffering ||
-      rawData?.catalogProductOfferings ||
-      rawData?.productOffering ||
+      rawData?.CatalogProductOfferings?.CatalogProductOffering ||
       (Array.isArray(rawData) ? rawData : [rawData]);
 
     res.json(flightOffersArray);
