@@ -59,6 +59,7 @@ app.get("/api/search", async (req, res) => {
 });
 
 // ✅ Flight Offers Search using Travelport TripServices
+// ✅ Flight Offers Search using Travelport TripServices
 app.get('/api/flight-offers', async (req, res) => {
   console.log("🔍 DEBUG QUERY RECEIVED for Travelport:", req.query);
 
@@ -74,7 +75,7 @@ app.get('/api/flight-offers', async (req, res) => {
     // 1. Get OAuth Bearer Token
     const accessToken = await getTravelportToken();
 
-    // 2. Exact Dashboard curl Payload Structure
+    // 2. Fully Populated Live Travelport Payload
     const searchPayload = {
       "@type": "CatalogProductOfferingsQueryRequest",
       "CatalogProductOfferingsRequest": {
@@ -103,9 +104,9 @@ app.get('/api/flight-offers', async (req, res) => {
       }
     };
 
-    console.log("🚀 Dispatching search request to Travelport API...");
+    console.log("🚀 Dispatching live search request to Travelport API...");
 
-    // 3. Dispatch to Travelport API Endpoint
+    // 3. Dispatch to Travelport API Endpoint (.net pre-production domain)
     const response = await axios.post(
       process.env.TRAVELPORT_BASE_URL || "https://api.pp.travelport.net/11/air/catalog/search/catalogproductofferings",
       searchPayload,
@@ -120,20 +121,19 @@ app.get('/api/flight-offers', async (req, res) => {
       }
     );
 
-    // ✅ Transform Travelport Response to match React Frontend expectations if needed
-    // Inside your /api/flight-offers route in server.js:
+    console.log("✅ Travelport live flight offers fetched successfully!");
+
     const rawData = response.data;
-    console.log("✅ Travelport flight offers fetched successfully!");
     
-    // Safely unwrap Travelport's nested catalog offerings structure
+    // Unwrap Travelport's nested structure safely into an array
+    const catalogResponse = rawData?.CatalogProductOfferingsResponse || rawData;
     const flightOffersArray = 
-      rawData.CatalogProductOfferingsResponse?.catalogProductOfferings ||
-      rawData.catalogProductOfferings ||
-      rawData.productOffering ||
-      rawData.data ||
+      catalogResponse?.catalogProductOfferings ||
+      catalogResponse?.productOffering ||
+      rawData?.catalogProductOfferings ||
+      rawData?.productOffering ||
       (Array.isArray(rawData) ? rawData : [rawData]);
 
-    // Send the clean, verified array back to the frontend
     res.json(flightOffersArray);
     
   } catch (error) {
