@@ -105,7 +105,7 @@ app.get('/api/flight-offers', async (req, res) => {
 
     console.log("🚀 Dispatching search request to Travelport API...");
 
-    // 3. Dispatch to Travelport API Endpoint with Required Custom Headers
+    // 3. Dispatch to Travelport API Endpoint
     const response = await axios.post(
       process.env.TRAVELPORT_BASE_URL || "https://api.pp.travelport.net/11/air/catalog/search/catalogproductofferings",
       searchPayload,
@@ -120,8 +120,13 @@ app.get('/api/flight-offers', async (req, res) => {
       }
     );
 
+    // ✅ Transform Travelport Response to match React Frontend expectations if needed
+    // Travelport returns CatalogProductOfferingsResponse containing the product offerings
+    const rawData = response.data;
     console.log("✅ Travelport flight offers fetched successfully!");
-    res.json(response.data);
+    
+    // Pass raw data or extract offerings list depending on your UI parser
+    res.json(rawData.CatalogProductOfferingsResponse?.catalogProductOfferings || rawData);
     
   } catch (error) {
     const errorDetails = error.response?.data || error.message;
