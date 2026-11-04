@@ -488,58 +488,62 @@ export default function FlightOffers() {
   ) : (
     <div className="space-y-4">
       {flightList.map((flight, idx) => {
-  // Safely drill down into Travelport's live price structures
-  const rawPrice = 
-    flight?.Price?.Total || 
-    flight?.price?.total || 
-    flight?.TotalPrice || 
-    flight?.totalPrice || 
-    flight?.catalogProductOffering?.Price?.Total || 
-    477; // fallback sample value if missing
+    // Safely drill down into Travelport's live price structures
+    const rawPrice = 
+      flight?.Price?.Total || 
+      flight?.price?.total || 
+      flight?.TotalPrice || 
+      flight?.totalPrice || 
+      flight?.catalogProductOffering?.Price?.Total || 
+      477; // fallback sample value if missing
 
-  const priceInNaira = Math.round(Number(rawPrice) * 1500);
-  const formattedPrice = new Intl.NumberFormat('en-NG', {
-    style: 'currency',
-    currency: 'NGN',
-    maximumFractionDigits: 0,
-  }).format(priceInNaira);
+    const priceInNaira = Math.round(Number(rawPrice) * 1500);
+    const formattedPrice = new Intl.NumberFormat('en-NG', {
+      style: 'currency',
+      currency: 'NGN',
+      maximumFractionDigits: 0,
+    }).format(priceInNaira);
 
-  return (
-          <div
-            key={flight?.id || idx}
-            className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
-          >
-            <div className="space-y-1">
-              <div className="text-xs font-black uppercase text-orange-600 tracking-wider">
-                Option #{idx + 1} • {airlineTitle}
-              </div>
-              <div className="text-lg font-extrabold text-slate-900">
-                {flight?.itineraries?.[0]?.segments?.[0]?.departure?.iataCode} ➔ {flight?.itineraries?.[0]?.segments?.[slice => -1]?.arrival?.iataCode || "Destination"}
-              </div>
-              <div className="text-xs text-slate-500">
-                Carrier Code: {carrierCode} • Includes mandatory taxes & surcharges.
-              </div>
-            </div>
+    // Safely extract carrier code and airline display title
+    const carrierCode = flight?.itineraries?.[0]?.segments?.[0]?.carrierCode || flight?.carrierCode || "GDS";
+    const airlineTitle = getAirlineName ? getAirlineName(carrierCode) : `Airline (${carrierCode})`;
 
-            <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
-              <div className="text-left md:text-right">
-                <div className="text-[10px] font-black uppercase text-slate-400">Total Price</div>
-                <div className="text-2xl font-black text-slate-900">{formattedPrice}</div>
-              </div>
-
-              <button
-                onClick={() => {
-                  setSelectedFlight(flight);
-                  setShowBookingForm(true);
-                }}
-                className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow transition transform active:scale-95"
-              >
-                Select Flight
-              </button>
-            </div>
+    return (
+      <div
+        key={flight?.id || idx}
+        className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+      >
+        <div className="space-y-1">
+          <div className="text-xs font-black uppercase text-orange-600 tracking-wider">
+            Option #{idx + 1} • {airlineTitle}
           </div>
-        );
-      })}
+          <div className="text-lg font-extrabold text-slate-900">
+            {flight?.itineraries?.[0]?.segments?.[0]?.departure?.iataCode || origin} ➔ {flight?.itineraries?.[0]?.segments?.[flight?.itineraries?.[0]?.segments?.length - 1]?.arrival?.iataCode || destination}
+          </div>
+          <div className="text-xs text-slate-500">
+            Carrier Code: {carrierCode} • Includes mandatory taxes & surcharges.
+          </div>
+        </div>
+
+        <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
+          <div className="text-left md:text-right">
+            <div className="text-[10px] font-black uppercase text-slate-400">Total Price</div>
+            <div className="text-2xl font-black text-slate-900">{formattedPrice}</div>
+          </div>
+
+          <button
+            onClick={() => {
+              setSelectedFlight(flight);
+              setShowBookingForm(true);
+            }}
+            className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow transition transform active:scale-95"
+          >
+            Select Flight
+          </button>
+        </div>
+      </div>
+    );
+  })}
     </div>
   )}
 </div>

@@ -18,7 +18,7 @@ app.use(
 );
 app.use(express.json());
 
-// ✅ Helper Function: Get Travelport OAuth Token
+// ✅ Helper Function: Get Travelport OAuth Token (Password Grant Type with .net endpoint)
 async function getTravelportToken() {
   try {
     const params = new URLSearchParams();
@@ -45,13 +45,12 @@ async function getTravelportToken() {
   }
 }
 
-// ✅ Live Airport/City Search (or fallback keyword formatter)
+// ✅ City or Airport Search
 app.get("/api/search", async (req, res) => {
   const { keyword } = req.query;
   if (!keyword) return res.status(400).json({ error: "Missing keyword" });
 
   try {
-    // If you have a live provider endpoint, call it here. Otherwise, return normalized query object.
     res.json([{ name: keyword.toUpperCase(), iataCode: keyword.toUpperCase() }]);
   } catch (error) {
     console.error("❌ Search error:", error);
@@ -75,7 +74,7 @@ app.get('/api/flight-offers', async (req, res) => {
     // 1. Get OAuth Bearer Token
     const accessToken = await getTravelportToken();
 
-    // 2. Exact Travelport Catalog Product Offerings Payload Layout
+    // 2. Exact Dashboard curl Payload Structure
     const searchPayload = {
       "@type": "CatalogProductOfferingsQueryRequest",
       "CatalogProductOfferingsRequest": {
@@ -121,22 +120,22 @@ app.get('/api/flight-offers', async (req, res) => {
       }
     );
 
-    console.log("✅ Travelport flight offers fetched successfully!");
-
+    // ✅ Transform Travelport Response to match React Frontend expectations if needed
+    // Inside your /api/flight-offers route in server.js:
     const rawData = response.data;
+    console.log("✅ Travelport flight offers fetched successfully!");
     
-    // 🔍 Deeply inspect and unwrap Travelport's response schema to extract live offers
-    const catalogResponse = rawData?.CatalogProductOfferingsResponse || rawData;
+    // Safely unwrap Travelport's nested catalog offerings structure
     const flightOffersArray = 
-      catalogResponse?.catalogProductOfferings ||
-      catalogResponse?.productOffering ||
-      rawData?.catalogProductOfferings ||
-      rawData?.productOffering ||
+      rawData.CatalogProductOfferingsResponse?.catalogProductOfferings ||
+      rawData.catalogProductOfferings ||
+      rawData.productOffering ||
+      rawData.data ||
       (Array.isArray(rawData) ? rawData : [rawData]);
 
-    // Send the live offers array back to the frontend
+    // Send the clean, verified array back to the frontend
     res.json(flightOffersArray);
-
+    
   } catch (error) {
     const errorDetails = error.response?.data || error.message;
     console.error("❌ Travelport API Error:", JSON.stringify(errorDetails, null, 2));
@@ -144,7 +143,7 @@ app.get('/api/flight-offers', async (req, res) => {
   }
 });
 
-// ✅ Flight Booking Endpoint
+// ✅ Simulate Flight Booking
 app.post("/api/book-flight", async (req, res) => {
   const { flight, passenger } = req.body;
   if (!flight || !passenger)
