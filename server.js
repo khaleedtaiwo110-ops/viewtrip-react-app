@@ -75,30 +75,41 @@ app.get('/api/flight-offers', async (req, res) => {
     // 1. Get OAuth Bearer Token
     const accessToken = await getTravelportToken();
 
-    // 2. Canonical Travelport Catalog Product Offerings Payload
+    // 2. Verified Travelport Catalog Product Offerings Payload
     const searchPayload = {
-      "@type": "CatalogProductOfferingsQueryRequest",
-      "CatalogProductOfferingsRequest": {
-        "@type": "CatalogProductOfferingsRequestAir",
-        "maxNumberOfUpsellsToReturn": 4,
-        "contentSourceList": ["GDS"],
-        "PassengerCriteria": [
-          {
-            "@type": "PassengerCriteria",
-            "number": parseInt(adults || 1),
-            "passengerTypeCode": "ADT"
-          }
-        ],
+      "CatalogProductOfferingsQueryRequest": {
         "SearchCriteriaFlight": [
           {
-            "@type": "SearchCriteriaFlight",
-            "departureDate": date,
-            "From": {
-              "value": origin.toUpperCase()
-            },
-            "To": {
-              "value": destination.toUpperCase()
-            }
+            "originationDestinationReference": "OD1",
+            "origin": [
+              {
+                "rloc": "",
+                "code": origin.toUpperCase()
+              }
+            ],
+            "destination": [
+              {
+                "rloc": "",
+                "code": destination.toUpperCase()
+              }
+            ],
+            "departureWindow": [
+              {
+                "startDate": date
+              }
+            ],
+            "Cabin": [travelClass || "Economy"]
+          }
+        ],
+        "PassengerCriteria": [
+          {
+            "passengerTypeCode": "ADT",
+            "number": parseInt(adults || 1)
+          }
+        ],
+        "catalogProductOfferingsCriteria": [
+          {
+            "contentSourceList": ["GDS"]
           }
         ]
       }
