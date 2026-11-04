@@ -58,13 +58,13 @@ app.get("/api/search", async (req, res) => {
   }
 });
 
-// ✅ Flight Offers Search using Travelport TripServices
+
 // ✅ Flight Offers Search using Travelport TripServices
 app.get('/api/flight-offers', async (req, res) => {
   console.log("🔍 DEBUG QUERY RECEIVED for Travelport:", req.query);
 
   try {
-    const { origin, destination, date, adults } = req.query;
+    const { origin, destination, date, adults, travelClass } = req.query;
 
     if (!origin || !destination || !date) {
       return res.status(400).json({ 
@@ -75,41 +75,30 @@ app.get('/api/flight-offers', async (req, res) => {
     // 1. Get OAuth Bearer Token
     const accessToken = await getTravelportToken();
 
-    // 2. Verified Travelport Catalog Product Offerings Payload
+    // 2. Canonical Travelport Catalog Product Offerings Payload
     const searchPayload = {
-      "CatalogProductOfferingsQueryRequest": {
-        "SearchCriteriaFlight": [
-          {
-            "originationDestinationReference": "OD1",
-            "origin": [
-              {
-                "rloc": "",
-                "code": origin.toUpperCase()
-              }
-            ],
-            "destination": [
-              {
-                "rloc": "",
-                "code": destination.toUpperCase()
-              }
-            ],
-            "departureWindow": [
-              {
-                "startDate": date
-              }
-            ],
-            "Cabin": [travelClass || "Economy"]
-          }
-        ],
+      "@type": "CatalogProductOfferingsQueryRequest",
+      "CatalogProductOfferingsRequest": {
+        "@type": "CatalogProductOfferingsRequestAir",
+        "maxNumberOfUpsellsToReturn": 4,
+        "contentSourceList": ["GDS"],
         "PassengerCriteria": [
           {
-            "passengerTypeCode": "ADT",
-            "number": parseInt(adults || 1)
+            "@type": "PassengerCriteria",
+            "number": parseInt(adults || 1),
+            "passengerTypeCode": "ADT"
           }
         ],
-        "catalogProductOfferingsCriteria": [
+        "SearchCriteriaFlight": [
           {
-            "contentSourceList": ["GDS"]
+            "@type": "SearchCriteriaFlight",
+            "departureDate": date,
+            "From": {
+              "value": origin.toUpperCase()
+            },
+            "To": {
+              "value": destination.toUpperCase()
+            }
           }
         ]
       }
