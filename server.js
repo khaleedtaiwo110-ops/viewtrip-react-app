@@ -121,11 +121,11 @@ app.get('/api/flight-offers', async (req, res) => {
     );
 
     // ✅ Transform Travelport Response to match React Frontend expectations if needed
-    // Travelport returns CatalogProductOfferingsResponse containing the product offerings
+    // Inside your /api/flight-offers route in server.js:
     const rawData = response.data;
     console.log("✅ Travelport flight offers fetched successfully!");
     
-    // Safely extract the real offerings array from Travelport's nested structure
+    // Safely unwrap Travelport's nested catalog offerings structure
     const flightOffersArray = 
       rawData.CatalogProductOfferingsResponse?.catalogProductOfferings ||
       rawData.catalogProductOfferings ||
@@ -133,8 +133,9 @@ app.get('/api/flight-offers', async (req, res) => {
       rawData.data ||
       (Array.isArray(rawData) ? rawData : [rawData]);
 
-    // Send the real array back to the frontend
+    // Send the clean, verified array back to the frontend
     res.json(flightOffersArray);
+
     
   } catch (error) {
     const errorDetails = error.response?.data || error.message;
