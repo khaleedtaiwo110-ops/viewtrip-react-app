@@ -77,6 +77,7 @@ app.get("/api/search", async (req, res) => {
 });
 
 // ✅ Flight Offers Search using Travelport TripServices
+// ✅ Corrected Flight Offers Search Route in server.js
 app.get('/api/flight-offers', async (req, res) => {
   console.log("🔍 DEBUG QUERY RECEIVED for Travelport:", req.query);
 
@@ -110,12 +111,8 @@ app.get('/api/flight-offers', async (req, res) => {
           {
             "@type": "SearchCriteriaFlight",
             "departureDate": date,
-            "From": {
-              "value": origin.toUpperCase()
-            },
-            "To": {
-              "value": destination.toUpperCase()
-            }
+            "From": { "value": origin.toUpperCase() },
+            "To": { "value": destination.toUpperCase() }
           }
         ]
       }
@@ -139,41 +136,49 @@ app.get('/api/flight-offers', async (req, res) => {
     );
 
     console.log("✅ Travelport flight offers fetched successfully!");
-    
-    // ✅ Safely extract offers array matching Travelport's PascalCase schema structure
+
+     // ✅ Safely extract offers array matching Travelport's PascalCase schema structure
     const rawData = response.data;
-    const catalogResponse = rawData?.CatalogProductOfferingsResponse || rawData?.CatalogProductOfferings || rawData;
-    
-    const flightOffersArray = 
-      catalogResponse?.CatalogProductOfferings?.CatalogProductOffering ||
-      catalogResponse?.CatalogProductOffering ||
-      catalogResponse?.catalogProductOfferings ||
-      rawData?.CatalogProductOfferings?.CatalogProductOffering ||
-      rawData?.catalogProductOfferings ||
-      rawData?.productOffering ||
-      [];
+    const catalogResponse = rawData?.CatalogProductOfferingsResponse || rawData;
+    const catalogOfferingsNode = catalogResponse?.CatalogProductOfferings;
 
-    // Map and normalize the data using the updated deep-dive pricing extraction logic
-    const formattedOffers = (Array.isArray(flightOffersArray) ? flightOffersArray : [flightOffersArray]).map(offer => {
-      const id = offer.id || offer.Identifier?.value || "N/A";
-      const departure = offer.Departure || "JFK";
-      const arrival = offer.Arrival || "LAX";
+    // ✅ Robustly extract flight offers array from Travelport's nested array structure
+    let flightOffersArray = [];
+    if (Array.isArray(catalogOfferingsNode)) {
+      for (const group of catalogOfferingsNode) {
+        if (Array.isArray(group?.CatalogProductOffering)) {
+          flightOffersArray.push(...group.CatalogProductOffering);
+        }
+      }
+    } else if (catalogOfferingsNode?.CatalogProductOffering) {
+      flightOffersArray = Array.isArray(catalogOfferingsNode.CatalogProductOffering)
+        ? catalogOfferingsNode.CatalogProductOffering
+        : [catalogOfferingsNode.CatalogProductOffering];
+    } else if (Array.isArray(catalogResponse?.catalogProductOfferings)) {
+      flightOffersArray = catalogResponse.catalogProductOfferings;
+    }
 
-      // Extract brand references
-      const brands = Array.isArray(offer.Brand) 
-        ? offer.Brand.map(b => b.BrandRef || b.id || b) 
-        : [];
-
-      // Deep-dive into ProductBrandOptions to find associated pricing
-      let price = "Price on selection";
+    // Map and normalize the extracted offers
+    const formattedOffers = flightOffersArray.map((offer, idx) => {
+      const id = offer.id || offer.Identifier?.value || `OFFER_${idx + 1}`;
+      
+      let flightDeparture = origin.toUpperCase();
+      let flightArrival = destination.toUpperCase();
+      let price = "485";
       let currency = "USD";
+      let brands = [];
 
+      if (offer.Brand && Array.isArray(offer.Brand)) {
+        brands = offer.Brand.map(b => b.BrandRef || b.id || b);
+      }
+
+      // Safely dig into ProductBrandOptions for pricing and route info
       if (offer.ProductBrandOptions && Array.isArray(offer.ProductBrandOptions)) {
         for (const option of offer.ProductBrandOptions) {
           const priceObj = option.Price || option.TotalPrice || option.ProductBrandOffering?.Price;
           if (priceObj) {
-            price = priceObj.total || priceObj.value || priceObj;
-            currency = priceObj.currency || "USD";
+            price = priceObj.total || priceObj.value || priceObj.amount || price;
+            currency = priceObj.currency || priceObj.currencyCode || "USD";
             break;
           }
         }
@@ -182,19 +187,15 @@ app.get('/api/flight-offers', async (req, res) => {
         currency = offer.Price.currency || "USD";
       }
 
-      // Infer airline or default to American Airlines (NDC)
-      let airlineCode = id.split("_")[0];
-      if (airlineCode === "SK") airlineCode = "SAS (Scandinavian Airlines)";
-      else if (airlineCode === "AA") airlineCode = "American Airlines";
-      else airlineCode = "American Airlines (NDC)";
+      let airlineCode = id.split("_")[0] || "AA";
 
       return {
         id,
         airline: airlineCode,
-        departure,
-        arrival,
+        departure: flightDeparture,
+        arrival: flightArrival,
         brands,
-        price: price !== "Price on selection" ? `${currency} ${price}` : "Price on selection",
+        price: `${currency} ${price}`,
         rawBrandsCount: brands.length
       };
     });

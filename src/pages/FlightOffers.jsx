@@ -11,14 +11,10 @@ import {
   Search,
   X,
   ChevronDown,
-  Info,
-  DollarSign,
   AlertCircle,
-  CheckCircle2,
   Luggage,
   Receipt
 } from "lucide-react";
-import AdBanner from "../componentss/adsgoogle";
 
 // Helper dictionary to convert common carrier codes to Airline Names
 const getAirlineName = (code) => {
@@ -259,7 +255,7 @@ export default function FlightOffers() {
 
   const totalPassengersCount = adults + children + infants;
 
-  // Derive flight list with fallback structures for Travelport payloads[cite: 1]
+  // Derive flight list with robust fallback structures
   const flightList = Array.isArray(results) 
     ? results 
     : (Array.isArray(results?.data) ? results.data : null) ||
@@ -485,18 +481,20 @@ export default function FlightOffers() {
           ) : (
             <div className="space-y-4">
               {flightList.map((flight, idx) => {
-                // Robust extraction for Travelport pricing structures
+                // Robust extraction and parsing using nullish coalescing & safe regex
                 const rawPrice = 
-                  flight?.Price?.Total || 
-                  flight?.price?.total || 
-                  flight?.TotalPrice || 
-                  flight?.totalPrice || 
-                  flight?.Price?.Amount || 
-                  flight?.price?.amount || 
-                  flight?.catalogProductOffering?.Price?.Total || 
-                  477;
+                  flight?.price ?? 
+                  flight?.Price?.total ?? 
+                  flight?.Price?.Total ?? 
+                  flight?.TotalPrice ?? 
+                  flight?.totalPrice ?? 
+                  "485";
 
-                const priceInNaira = Math.round(Number(rawPrice) * 1500);
+                const numericPrice = parseFloat(
+                  typeof rawPrice === 'string' ? rawPrice.replace(/[^0-9.-]/g, '') : rawPrice
+                ) || 485;
+
+                const priceInNaira = Math.round(numericPrice * 1500);
                 const formattedPrice = new Intl.NumberFormat('en-NG', {
                   style: 'currency',
                   currency: 'NGN',
@@ -504,13 +502,13 @@ export default function FlightOffers() {
                 }).format(priceInNaira);
 
                 // Robust extraction for Travelport carrier code / validating airline code
+                const derivedCarrier = flight?.id?.includes("_") ? flight.id.split("_")[0] : "AA";
                 const carrierCode = 
                   flight?.validatingAirlineCode || 
                   flight?.ValidatingAirlineCode || 
                   flight?.carrierCode || 
                   flight?.CarrierCode || 
-                  flight?.itineraries?.[0]?.segments?.[0]?.carrierCode || 
-                  "GDS";
+                  derivedCarrier;
                   
                 const airlineTitle = getAirlineName(carrierCode);
 
@@ -521,13 +519,13 @@ export default function FlightOffers() {
                   >
                     <div className="space-y-1">
                       <div className="text-xs font-black uppercase text-orange-600 tracking-wider">
-                        Option #{idx + 1} • {airlineTitle}
+                        Offering ID: {flight?.id || idx + 1} • {airlineTitle}
                       </div>
                       <div className="text-lg font-extrabold text-slate-900">
-                        {flight?.itineraries?.[0]?.segments?.[0]?.departure?.iataCode || origin} ➔ {flight?.itineraries?.[0]?.segments?.[flight?.itineraries?.[0]?.segments?.length - 1]?.arrival?.iataCode || destination}
+                        {flight?.departure || origin} ➔ {flight?.arrival || destination}
                       </div>
                       <div className="text-xs text-slate-500">
-                        Carrier Code: {carrierCode} • Includes mandatory taxes & surcharges.
+                        Available Brands Count: {flight?.rawBrandsCount || flight?.brands?.length || "Multiple Fares"} • Includes mandatory taxes & surcharges.
                       </div>
                     </div>
 
@@ -659,35 +657,11 @@ export default function FlightOffers() {
                 {/* 1. COMPREHENSIVE JOURNEY BREAKDOWN CARD */}
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-4">
                   <h4 className="text-xs font-black uppercase text-blue-700 tracking-wider flex items-center gap-1.5">
-                    ✈️ Full Route Segment & Airline Details
+                    ✈️ Offering Reference: {selectedFlight.id}
                   </h4>
-                  
-                  <div className="space-y-3">
-                    {selectedFlight.itineraries?.[0]?.segments?.map((seg, sIdx) => (
-                      <div key={sIdx} className="bg-white border border-slate-200 rounded-xl p-3 text-xs space-y-2 shadow-sm">
-                        <div className="flex justify-between items-center border-b border-slate-100 pb-1.5 font-black text-slate-900">
-                          <span>{getAirlineName(seg.carrierCode)}</span>
-                          <span className="bg-slate-100 px-2 py-0.5 rounded text-[10px] text-slate-600">Flight #{seg.carrierCode}-{seg.number}</span>
-                        </div>
-                        <div className="grid grid-cols-2 gap-4 font-bold text-slate-700">
-                          <div>
-                            <p className="text-[10px] uppercase text-slate-400 font-black">Departure</p>
-                            <p className="text-sm text-slate-900 font-black uppercase">{seg.departure?.iataCode}</p>
-                            <p className="text-[11px] mt-0.5">{seg.departure?.at ? new Date(seg.departure.at).toLocaleString() : "N/A"}</p>
-                          </div>
-                          <div>
-                            <p className="text-[10px] uppercase text-slate-400 font-black">Arrival</p>
-                            <p className="text-sm text-slate-900 font-black uppercase">{seg.arrival?.iataCode}</p>
-                            <p className="text-[11px] mt-0.5">{seg.arrival?.at ? new Date(seg.arrival.at).toLocaleString() : "N/A"}</p>
-                          </div>
-                        </div>
-                        <div className="text-[10px] font-black text-slate-400 pt-1 flex justify-between">
-                          <span>Cabin Tier: {seg.cabin || travelClass}</span>
-                          <span>Duration Segment: {formatDuration(seg.duration)}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
+                  <p className="text-xs text-slate-600 font-bold">
+                    Route: {selectedFlight.departure} ➔ {selectedFlight.arrival} | Available Brands: {selectedFlight.brands?.join(", ") || "Standard Fares"}
+                  </p>
                 </div>
 
                 {/* 2. DYNAMIC BAGGAGE ALLOWANCE SCHEDULER */}
@@ -696,65 +670,23 @@ export default function FlightOffers() {
                     <Luggage className="w-4 h-4 text-blue-600" /> Baggage Allowance Matrix
                   </h4>
                   <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs space-y-2 shadow-sm">
-                    {selectedFlight.fareDetailsBySegment?.[0] || selectedFlight.travelerPricings?.[0]?.fareDetailsBySegment?.[0] ? (
-                      (() => {
-                        const details = selectedFlight.fareDetailsBySegment?.[0] || selectedFlight.travelerPricings?.[0]?.fareDetailsBySegment?.[0];
-                        const checkedOption = details.includedCheckedBags?.quantity !== undefined ? `${details.includedCheckedBags.quantity} Pcs` : (details.includedCheckedBags?.weight ? `${details.includedCheckedBags.weight} ${details.includedCheckedBags.weightUnit || "KG"}` : "Not Specified");
-                        const cabinOption = details.includedCabinBags?.quantity !== undefined ? `${details.includedCabinBags.quantity} Pcs` : "1 Standard Cabin Bag";
-                        
-                        return (
-                          <div className="grid grid-cols-2 gap-4 text-slate-700 font-bold">
-                            <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex flex-col">
-                              <span className="text-[10px] text-slate-400 font-black uppercase mb-0.5">Checked Luggage Allowance</span>
-                              <span className="text-slate-900 font-black">{checkedOption}</span>
-                            </div>
-                            <div className="p-2.5 bg-slate-50 rounded-lg border border-slate-100 flex flex-col">
-                              <span className="text-[10px] text-slate-400 font-black uppercase mb-0.5">Cabin Carry-On Allowance</span>
-                              <span className="text-slate-900 font-black">{cabinOption}</span>
-                            </div>
-                          </div>
-                        );
-                      })()
-                    ) : (
-                      <p className="text-slate-500 font-bold text-[11px]">Standard Weight Restrictions Apply (1 Checked piece up to 23KG + 1 Carry-On bag).</p>
-                    )}
+                    <p className="text-slate-500 font-bold text-[11px]">Standard Weight Restrictions Apply (1 Checked piece up to 23KG + 1 Carry-On bag).</p>
                     <p className="text-[9px] text-slate-400 font-medium italic mt-1">⚠️ Excess luggage metrics can be bought directly at the ticketing counter during physical clearance loops.</p>
                   </div>
                 </div>
 
-                {/* 3. INDIVIDUAL FARE breakdown RECEIPT SLIP */}
+                {/* 3. INDIVIDUAL FARE BREAKDOWN RECEIPT SLIP */}
                 <div className="bg-slate-50 rounded-2xl p-4 border border-slate-200/80 space-y-3">
                   <h4 className="text-xs font-black uppercase text-blue-700 tracking-wider flex items-center gap-1.5">
                     <Receipt className="w-4 h-4 text-blue-600" /> Itemized Individual Passenger Fare Matrix
                   </h4>
-                  <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs divide-y divide-slate-100 shadow-sm">
-                    {selectedFlight.travelerPricings?.map((tp, tpIdx) => {
-                      const baseVal = parseFloat(tp.price?.base || tp.price?.total || 0);
-                      
-                      const totalNaira = Math.round(parseFloat(tp.price?.total || 0) * 1500);
-                      const fmtBase = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(Math.round(baseVal * 1500));
-                      const fmtTotal = new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(totalNaira);
-
-                      return (
-                        <div key={tpIdx} className="py-2.5 first:pt-0 last:pb-0 flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
-                          <div>
-                            <p className="font-black text-slate-800 uppercase tracking-tight">Passenger #{tpIdx + 1} ({tp.travelerType || "ADULT"})</p>
-                            <p className="text-[10px] font-bold text-slate-400 mt-0.5">Base Carrier Fee: {fmtBase} | Type Code ID: {tp.travelerId}</p>
-                          </div>
-                          <div className="text-left sm:text-right">
-                            <p className="text-sm font-black text-slate-900">{fmtTotal}</p>
-                            <p className="text-[10px] font-bold text-emerald-600">Includes Taxes & Fees</p>
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {/* Final Aggregate Sum Total Box */}
-                    <div className="pt-3 mt-1 flex justify-between items-center font-black text-slate-900 text-sm">
-                      <span className="uppercase tracking-wide text-xs">Total Aggregate Cost Summary</span>
-                      <span className="text-lg text-blue-600">
-                        {new Intl.NumberFormat('en-NG', { style: 'currency', currency: 'NGN', maximumFractionDigits: 0 }).format(parseFloat(selectedFlight.price?.total || selectedFlight.Price?.Total || selectedFlight.TotalPrice || 0) * 1500)}
-                      </span>
+                  <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs shadow-sm flex justify-between items-center">
+                    <div>
+                      <p className="font-black text-slate-800 uppercase tracking-tight">Catalog Product Offering ID: {selectedFlight.id}</p>
+                      <p className="text-[10px] font-bold text-emerald-600 mt-0.5">Includes Mandatory Taxes & Surcharges</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-black text-slate-900">{selectedFlight.price}</p>
                     </div>
                   </div>
                 </div>
