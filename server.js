@@ -4,7 +4,6 @@ import dotenv from "dotenv";
 import axios from "axios";
 import nodemailer from "nodemailer";
 import https from "https";
-import fs from "fs";
 
 dotenv.config();
 
@@ -26,7 +25,6 @@ async function getTravelportToken() {
 
   try {
     const params = new URLSearchParams();
-
     params.append("grant_type", "password");
     params.append("username", process.env.TRAVELPORT_USERNAME);
     params.append("password", process.env.TRAVELPORT_PASSWORD);
@@ -58,11 +56,6 @@ async function getTravelportToken() {
 // ==========================================
 // TRAVELPORT HELPERS & NORMALIZATION
 // ==========================================
-
-const asArray = (value) => {
-  if (value == null) return [];
-  return Array.isArray(value) ? value : [value];
-};
 
 const getPassengerCriteria = (adults, children, infants) => {
   const passengers = [];
@@ -371,20 +364,7 @@ const normalizeTravelportResponse = (rawData) => {
 // API ENDPOINTS
 // ==========================================
 
-// ✅ City / Airport Code Passthrough
-app.get("/api/search", async (req, res) => {
-  const { keyword } = req.query;
-  if (!keyword) return res.status(400).json({ error: "Missing keyword" });
-
-  try {
-    const formattedCode = keyword.trim().toUpperCase();
-    res.json([{ name: formattedCode, iataCode: formattedCode }]);
-  } catch (error) {
-    console.error("❌ Search error:", error);
-    res.status(500).json({ error: error.message });
-  }
-});
-
+// ✅ Travelport Flight Offers API
 // ✅ Travelport Flight Offers API
 app.get("/api/flight-offers", async (req, res) => {
   console.log("Travelport search request:", req.query);
@@ -565,6 +545,37 @@ app.get("/api/flight-offers", async (req, res) => {
     const normalized = normalizeTravelportResponse(response.data);
     console.log(`Travelport returned ${normalized.offers.length} fare offers.`);
 
+    // Check for GDS / Travelport error response codes
+    const gdsErrors = normalized.result?.Error || [];
+    const hasNoOffersError = gdsErrors.some(err => 
+      err.Message?.includes("NO OFFERS FOUND") || err.SourceCode === "9000"
+    );
+
+    // If no offers found or explicit Travelport "NO OFFERS FOUND" message
+    if (normalized.offers.length === 0 || hasNoOffersError) {
+      return res.status(200).json({
+        success: false,
+        message: "No available flight found, try modifying the date.",
+        provider: "Travelport",
+        search: {
+          origin: originCode,
+          destination: destinationCode,
+          departureDate: date,
+          returnDate: returnDate || null,
+          adults: adultCount,
+          children: childCount,
+          infants: infantCount,
+          cabin
+        },
+        transactionId: normalized.transactionId,
+        identifier: normalized.identifier,
+        totalOffers: 0,
+        offers: [],
+        warnings: normalized.result?.Warning || [],
+        errors: gdsErrors
+      });
+    }
+
     return res.status(200).json({
       success: true,
       provider: "Travelport",
@@ -583,7 +594,7 @@ app.get("/api/flight-offers", async (req, res) => {
       totalOffers: normalized.offers.length,
       offers: normalized.offers,
       warnings: normalized.result?.Warning || [],
-      errors: normalized.result?.Error || []
+      errors: gdsErrors
     });
 
   } catch (error) {
@@ -674,28 +685,6 @@ app.post("/api/price-offer", async (req, res) => {
       success: false,
       error: error.response?.data || error.message
     });
-  }
-});
-
-// ✅ Live Flight Reservation Endpoint (No Mock PNRs)
-app.post("/api/book-flight", async (req, res) => {
-  const { flight, passenger } = req.body;
-  if (!flight || !passenger) {
-    return res.status(400).json({ error: "Missing flight or passenger data" });
-  }
-
-  try {
-    console.log("✅ Booking request received for processing:", { passenger, flight });
-    
-    // Pass live payload directly to GDS booking processing...
-    
-    res.json({ 
-      success: true, 
-      message: "Booking payload verified and ready for GDS ticketholder processing." 
-    });
-  } catch (err) {
-    console.error("❌ Booking failed:", err);
-    res.status(500).json({ error: "Booking execution failed." });
   }
 });
 

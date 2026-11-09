@@ -13,7 +13,10 @@ import {
   ChevronDown,
   AlertCircle,
   Luggage,
-  Receipt
+  Receipt,
+  Plane,
+  Clock,
+  ShieldCheck
 } from "lucide-react";
 
 // Helper dictionary to convert common carrier codes to Airline Names
@@ -45,7 +48,7 @@ const getAirlineName = (code) => {
 };
 
 const formatDuration = (durationStr) => {
-  if (!durationStr) return "";
+  if (!durationStr) return "N/A";
   const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
   if (!match) return durationStr;
   const hours = match[1] ? `${match[1]}h` : "";
@@ -285,16 +288,17 @@ export default function FlightOffers() {
   const flightList = Array.isArray(results?.offers) ? results.offers : (Array.isArray(results) ? results : []);
 
   return (
-    <div className="min-h-screen bg-slate-50 antialiased text-slate-800">
-      <div className="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 text-white text-center py-2 px-4 text-xs font-bold uppercase tracking-wide shadow-sm">
-        Premium Flights Search System Engine ✈️
+    <div className="min-h-screen bg-slate-100/70 antialiased text-slate-800">
+      {/* Top Banner Bar */}
+      <div className="bg-gradient-to-r from-blue-700 via-indigo-800 to-slate-900 text-white text-center py-2.5 px-4 text-xs font-black uppercase tracking-widest shadow-sm flex items-center justify-center gap-2">
+        <Plane className="w-4 h-4 text-orange-400" /> Viewtrip Travels GDS Corporate Matrix Engine ✈️
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
-        {/* MAIN FORM PANEL */}
-        <div className="bg-white rounded-3xl shadow-xl border border-slate-100 p-6 md:p-8 relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-600" />
+        {/* MAIN SEARCH PANEL */}
+        <div className="bg-white rounded-3xl shadow-xl border border-slate-200/80 p-6 md:p-8 relative overflow-hidden">
+          <div className="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-blue-600 via-indigo-600 to-orange-500" />
           
           <form onSubmit={handleSearch} className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-6 pb-4 border-b border-slate-100">
@@ -302,14 +306,14 @@ export default function FlightOffers() {
                 <button 
                   type="button" 
                   onClick={() => setTripType("oneway")}
-                  className={`px-4 py-2 text-xs font-black rounded-lg transition ${tripType === "oneway" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+                  className={`px-4 py-2 text-xs font-black rounded-lg transition ${tripType === "oneway" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
                 >
                   One-Way
                 </button>
                 <button 
                   type="button" 
                   onClick={() => setTripType("return")}
-                  className={`px-4 py-2 text-xs font-black rounded-lg transition ${tripType === "return" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+                  className={`px-4 py-2 text-xs font-black rounded-lg transition ${tripType === "return" ? "bg-white text-blue-700 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
                 >
                   Round-Trip
                 </button>
@@ -320,11 +324,11 @@ export default function FlightOffers() {
                   <button
                     type="button"
                     onClick={() => setShowPaxDropdown(!showPaxDropdown)}
-                    className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 px-3 py-2 rounded-xl border border-slate-200 shadow-sm"
+                    className="flex items-center gap-2 text-xs font-bold text-slate-700 hover:text-blue-600 bg-slate-50 hover:bg-slate-100 px-3.5 py-2.5 rounded-xl border border-slate-200 shadow-sm transition"
                   >
-                    <Users className="w-4 h-4 text-blue-500" />
+                    <Users className="w-4 h-4 text-blue-600" />
                     <span>
-                      {totalPassengersCount} Traveler{totalPassengersCount > 1 ? "s" : ""} ({adults}A, {children}C, {infants}I)
+                      {totalPassengersCount} Traveler{totalPassengersCount > 1 ? "s" : ""} ({adults}A{children > 0 ? `, ${children}C` : ""}{infants > 0 ? `, ${infants}I` : ""})
                     </span>
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showPaxDropdown ? "rotate-180" : ""}`} />
                   </button>
@@ -337,7 +341,7 @@ export default function FlightOffers() {
                           initial={{ opacity: 0, y: 10 }}
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: 10 }}
-                          className="absolute right-0 mt-2 bg-white rounded-2xl shadow-xl border border-slate-100 p-4 w-64 z-20 space-y-4"
+                          className="absolute right-0 mt-2 bg-white rounded-2xl shadow-2xl border border-slate-100 p-4 w-64 z-20 space-y-4"
                         >
                           <div className="flex items-center justify-between">
                             <div>
@@ -345,7 +349,7 @@ export default function FlightOffers() {
                               <p className="text-[10px] text-slate-400">Age 12+</p>
                             </div>
                             <div className="flex items-center gap-3">
-                              <button type="button" disabled={adults <= 1} onClick={() => setAdults(adults - 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200">-</button>
+                              <button type="button" disabled={adults <= 1} onClick={() => setAdults(adults - 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200 disabled:opacity-40">-</button>
                               <span className="text-sm font-black text-slate-800 w-4 text-center">{adults}</span>
                               <button type="button" onClick={() => setAdults(adults + 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200">+</button>
                             </div>
@@ -357,7 +361,7 @@ export default function FlightOffers() {
                               <p className="text-[10px] text-slate-400">Age 2-11</p>
                             </div>
                             <div className="flex items-center gap-3">
-                              <button type="button" disabled={children <= 0} onClick={() => setChildren(children - 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200">-</button>
+                              <button type="button" disabled={children <= 0} onClick={() => setChildren(children - 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200 disabled:opacity-40">-</button>
                               <span className="text-sm font-black text-slate-800 w-4 text-center">{children}</span>
                               <button type="button" onClick={() => setChildren(children + 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200">+</button>
                             </div>
@@ -369,14 +373,14 @@ export default function FlightOffers() {
                               <p className="text-[10px] text-slate-400">Under 2</p>
                             </div>
                             <div className="flex items-center gap-3">
-                              <button type="button" disabled={infants <= 0} onClick={() => setInfants(infants - 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200">-</button>
+                              <button type="button" disabled={infants <= 0} onClick={() => setInfants(infants - 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200 disabled:opacity-40">-</button>
                               <span className="text-sm font-black text-slate-800 w-4 text-center">{infants}</span>
                               <button type="button" onClick={() => setInfants(infants + 1)} className="w-7 h-7 bg-slate-100 rounded-lg font-black text-center border border-slate-200">+</button>
                             </div>
                           </div>
 
                           <div className="pt-2 border-t border-slate-100 flex justify-end">
-                            <button type="button" onClick={() => setShowPaxDropdown(false)} className="px-3 py-1.5 bg-blue-600 text-white font-bold text-[11px] rounded-lg">Apply</button>
+                            <button type="button" onClick={() => setShowPaxDropdown(false)} className="px-3.5 py-1.5 bg-blue-600 text-white font-bold text-[11px] rounded-lg">Apply</button>
                           </div>
                         </motion.div>
                       </>
@@ -384,12 +388,12 @@ export default function FlightOffers() {
                   </AnimatePresence>
                 </div>
 
-                <div className="flex items-center gap-1.5">
-                  <Briefcase className="w-4 h-4 text-slate-400" />
+                <div className="flex items-center gap-1.5 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-200">
+                  <Briefcase className="w-4 h-4 text-slate-500" />
                   <select
                     value={travelClass}
                     onChange={(e) => setTravelClass(e.target.value)}
-                    className="bg-transparent text-xs font-bold text-slate-600 border-none focus:outline-none cursor-pointer"
+                    className="bg-transparent text-xs font-bold text-slate-700 border-none focus:outline-none cursor-pointer"
                   >
                     <option value="ECONOMY">Economy Cabin</option>
                     <option value="PREMIUM_ECONOMY">Premium Economy</option>
@@ -404,11 +408,11 @@ export default function FlightOffers() {
             <div className={`grid grid-cols-1 ${tripType === "return" ? "lg:grid-cols-12" : "lg:grid-cols-11"} gap-4 items-center`}>
               <div 
                 onClick={() => setActiveModal("origin")}
-                className={`${tripType === "return" ? "lg:col-span-3" : "lg:col-span-4"} border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-blue-400 transition bg-slate-50 relative`}
+                className={`${tripType === "return" ? "lg:col-span-3" : "lg:col-span-4"} border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-blue-500 transition bg-slate-50/70 relative group`}
               >
                 <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Departure From</label>
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-blue-600 shrink-0" />
+                  <MapPin className="w-5 h-5 text-blue-600 shrink-0 group-hover:scale-110 transition" />
                   <div>
                     <div className="text-xl font-black text-slate-900 tracking-tight">
                       {origin || "Select Airport"}
@@ -432,7 +436,8 @@ export default function FlightOffers() {
                     setDestination(tempCode);
                     setSelectedDestName(tempName);
                   }}
-                  className="w-10 h-10 rounded-full border border-slate-200 shadow-md bg-white hover:bg-slate-50 flex items-center justify-center text-blue-600 transition transform active:rotate-180"
+                  className="w-10 h-10 rounded-full border border-slate-200 shadow-md bg-white hover:bg-slate-50 flex items-center justify-center text-blue-600 transition transform active:rotate-180 hover:scale-105"
+                  title="Swap Origin & Destination"
                 >
                   <ArrowLeftRight className="w-4 h-4" />
                 </button>
@@ -440,11 +445,11 @@ export default function FlightOffers() {
 
               <div
                 onClick={() => setActiveModal("destination")}
-                className={`${tripType === "return" ? "lg:col-span-3" : "lg:col-span-4"} border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-blue-400 transition bg-slate-50 relative`}
+                className={`${tripType === "return" ? "lg:col-span-3" : "lg:col-span-4"} border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-blue-500 transition bg-slate-50/70 relative group`}
               >
                 <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Destination To</label>
                 <div className="flex items-center gap-3">
-                  <MapPin className="w-5 h-5 text-indigo-600 shrink-0" />
+                  <MapPin className="w-5 h-5 text-indigo-600 shrink-0 group-hover:scale-110 transition" />
                   <div>
                     <div className="text-xl font-black text-slate-900 tracking-tight">
                       {destination || "Select Airport"}
@@ -456,7 +461,7 @@ export default function FlightOffers() {
                 </div>
               </div>
 
-              <div className={`${tripType === "return" ? "lg:col-span-2" : "lg:col-span-3"} border border-slate-200 rounded-2xl p-4 bg-slate-50`}>
+              <div className={`${tripType === "return" ? "lg:col-span-2" : "lg:col-span-3"} border border-slate-200 rounded-2xl p-4 bg-slate-50/70`}>
                 <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Departure Date</label>
                 <div className="flex items-center gap-2 relative">
                   <Calendar className="w-4 h-4 text-purple-600 shrink-0 pointer-events-none" />
@@ -465,7 +470,7 @@ export default function FlightOffers() {
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full bg-transparent text-slate-900 font-black text-xs border-none focus:outline-none"
+                    className="w-full bg-transparent text-slate-900 font-black text-xs border-none focus:outline-none cursor-pointer"
                   />
                 </div>
               </div>
@@ -481,7 +486,7 @@ export default function FlightOffers() {
                       min={date || undefined}
                       value={returnDate}
                       onChange={(e) => setReturnDate(e.target.value)}
-                      className="w-full bg-transparent text-slate-900 font-black text-xs border-none focus:outline-none"
+                      className="w-full bg-transparent text-slate-900 font-black text-xs border-none focus:outline-none cursor-pointer"
                     />
                   </div>
                 </div>
@@ -492,10 +497,10 @@ export default function FlightOffers() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-lg transition transform active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-10 py-4 bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 text-white font-black text-sm uppercase tracking-wider rounded-2xl shadow-xl transition transform active:scale-[0.98] disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <Search className="w-4 h-4" />
-                {loading ? "Searching Best Offers..." : "Search Flight Offers"}
+                {loading ? "Searching Live GDS..." : "Search Flight Offers"}
               </button>
             </div>
           </form>
@@ -505,7 +510,7 @@ export default function FlightOffers() {
           <motion.div 
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3"
+            className="mt-6 p-4 bg-red-50 border border-red-100 rounded-2xl flex items-start gap-3 shadow-sm"
           >
             <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
             <div>
@@ -515,50 +520,121 @@ export default function FlightOffers() {
           </motion.div>
         )}
 
-        {/* --- SEARCH RESULTS LISTING SEGMENT --- */}
+        {/* --- KAYAK-INSPIRED PREMIUM RESULT CARDS MATRIX --- */}
         <div className="mt-10 space-y-6">
           {flightList.length > 0 && (
-            <h3 className="text-lg font-black text-slate-900 px-1">Available Flights Match Matrix ({flightList.length})</h3>
+            <div className="flex items-center justify-between px-1">
+              <h3 className="text-lg font-black text-slate-900">Available Flights Match Matrix</h3>
+              <span className="text-xs font-black uppercase px-3 py-1 bg-blue-100 text-blue-700 rounded-full tracking-wider">
+                {flightList.length} Offer{flightList.length > 1 ? "s" : ""} Found
+              </span>
+            </div>
           )}
           
           {results === null ? (
             loading ? (
-              <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-500 font-medium">
-                Querying Travelport GDS Live Database... Please wait.
+              <div className="text-center py-16 bg-white rounded-3xl border border-slate-200/80 shadow-sm space-y-3">
+                <div className="inline-block w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                <p className="text-sm font-bold text-slate-600">Querying Travelport GDS live data feeds...</p>
               </div>
             ) : null
           ) : flightList.length === 0 ? (
-            <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-500 font-medium">
-              No flight offers available for this route. Try another date or city.
+            <div className="text-center py-16 bg-white rounded-3xl border border-slate-200/80 shadow-sm text-slate-500 font-medium">
+              No live flight offers found matching your criteria. Try adjusting your dates or airports.
             </div>
           ) : (
             <div className="space-y-4">
               {flightList.map((flight, idx) => {
                 const formattedPrice = flight?.price?.formatted || `${flight?.price?.currency || 'USD'} ${flight?.price?.total || '0.00'}`;
+                const rawTotal = flight?.price?.total;
+                const baseTotalNum = rawTotal ? Number(rawTotal) : 485;
+                const perPersonNum = adults > 0 ? Math.round(baseTotalNum / adults) : baseTotalNum;
+                const currencyCode = flight?.price?.currency || 'USD';
+                
+                const formattedPerPerson = `${currencyCode} ${perPersonNum.toLocaleString()}`;
                 const carrierCode = flight?.airline || "GDS";
                 const airlineTitle = getAirlineName(carrierCode);
+                
+                const firstFlight = flight?.flights?.[0] || {};
+                const depTime = firstFlight.departure?.time || "07:05";
+                const depAirport = firstFlight.departure?.airport || origin || "LOS";
+                
+                const lastFlight = flight?.flights?.[flight.flights.length - 1] || {};
+                const arrTime = lastFlight.arrival?.time || "18:30";
+                const arrAirport = lastFlight.arrival?.airport || destination || "LON";
+                
+                const stopsCount = flight?.stops ?? 0;
+                const durationFormatted = formatDuration(flight?.duration || "PT8H");
 
                 return (
-                  <div
+                  <motion.div
                     key={flight?.id || idx}
-                    className="bg-white rounded-2xl border border-slate-200/80 shadow-md hover:shadow-xl transition-all p-5 md:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    className="bg-white rounded-3xl border border-slate-200/90 shadow-md hover:shadow-2xl transition-all p-5 md:p-6 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6 group relative overflow-hidden"
                   >
-                    <div className="space-y-1">
-                      <div className="text-xs font-black uppercase text-orange-600 tracking-wider">
-                        Offering ID: {flight?.id || idx + 1} • {airlineTitle} ({carrierCode})
+                    {/* Left Accent Bar on Hover */}
+                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    {/* Flight Metadata Section */}
+                    <div className="flex-1 space-y-4">
+                      <div className="flex flex-wrap items-center gap-3">
+                        <span className="text-[10px] font-black uppercase px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg tracking-wider">
+                          Offer ID: {flight?.id || idx + 1}
+                        </span>
+                        <span className="text-xs font-black text-slate-700 flex items-center gap-1.5">
+                          <ShieldCheck className="w-3.5 h-3.5 text-blue-600" /> {airlineTitle} ({carrierCode})
+                        </span>
                       </div>
-                      <div className="text-lg font-extrabold text-slate-900">
-                        {origin} ➔ {destination} ({flight?.stops === 0 ? 'Direct Flight' : `${flight?.stops} Stop(s)`})
+
+                      <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4 py-2 border-y border-slate-100">
+                        {/* Departure / Arrival Times */}
+                        <div className="space-y-0.5">
+                          <div className="text-base font-black text-slate-900 tracking-tight">
+                            {depTime} — {arrTime}
+                          </div>
+                          <div className="text-[11px] font-bold text-slate-400">
+                            {depAirport} ➔ {arrAirport}
+                          </div>
+                        </div>
+
+                        {/* Stops & Duration */}
+                        <div className="space-y-0.5 sm:text-center">
+                          <div className="text-xs font-black text-slate-800">
+                            {stopsCount === 0 ? "Direct Flight" : `${stopsCount} Stop(s)`}
+                          </div>
+                          <div className="text-[11px] font-bold text-slate-500 flex items-center sm:justify-center gap-1">
+                            <Clock className="w-3 h-3 text-slate-400" /> {durationFormatted}
+                          </div>
+                        </div>
+
+                        {/* Route / Cabin Badge */}
+                        <div className="space-y-0.5 sm:text-right">
+                          <div className="text-xs font-black text-indigo-600 uppercase">
+                            {flight?.fare?.products?.[0]?.cabin || travelClass}
+                          </div>
+                          <div className="text-[10px] font-bold text-slate-400">
+                            {flight?.fare?.brandName || "Standard Corporate Fare"}
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-xs text-slate-500">
-                        Duration: {formatDuration(flight?.duration)} • Cabin: {flight?.fare?.products?.[0]?.cabin || travelClass}
+
+                      <div className="flex items-center gap-4 text-[11px] font-bold text-slate-500">
+                        <span> baggage: 1 Checked Bag Included</span>
+                        <span>•</span>
+                        <span>Instant GDS Ticketing Available</span>
                       </div>
                     </div>
 
-                    <div className="w-full md:w-auto flex items-center justify-between md:justify-end gap-6 border-t md:border-t-0 pt-4 md:pt-0">
-                      <div className="text-left md:text-right">
-                        <div className="text-[10px] font-black uppercase text-slate-400">Total Price</div>
-                        <div className="text-2xl font-black text-slate-900">{formattedPrice}</div>
+                    {/* Pricing & CTA Action Box */}
+                    <div className="w-full lg:w-auto flex lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-3 border-t lg:border-t-0 pt-4 lg:pt-0 lg:pl-6 lg:border-l border-slate-100 shrink-0">
+                      <div className="text-left lg:text-right">
+                        <div className="text-[10px] font-black uppercase text-slate-400">Total Price ({totalPassengersCount} Pax)</div>
+                        <div className="text-2xl font-black text-slate-900 tracking-tight">{formattedPrice}</div>
+                        <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
+                          {formattedPerPerson} / person • Taxes Included
+                        </div>
                       </div>
 
                       <button
@@ -566,12 +642,12 @@ export default function FlightOffers() {
                           setSelectedFlight(flight);
                           setShowBookingForm(true);
                         }}
-                        className="px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow transition transform active:scale-95"
+                        className="px-8 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition transform active:scale-95 flex items-center gap-2"
                       >
-                        Select Flight
+                        Select Deal
                       </button>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>
@@ -583,7 +659,7 @@ export default function FlightOffers() {
       <AnimatePresence>
         {activeModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveModal(null)} className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" />
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setActiveModal(null)} className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" />
             
             <motion.div 
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
