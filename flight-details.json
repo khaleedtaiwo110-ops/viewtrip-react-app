@@ -1,0 +1,640 @@
+[
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "X1",
+    "number": "61",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s1",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "06:45:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "08:00:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "W1",
+    "number": "3588",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s10",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "18:00:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "19:15:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H20M",
+    "carrier": "P4",
+    "number": "7120",
+    "equipment": "320",
+    "id": "s11",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "06:30:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "07:50:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H20M",
+    "carrier": "P4",
+    "number": "7124",
+    "equipment": "E90",
+    "id": "s12",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "07:00:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "08:20:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H20M",
+    "carrier": "P4",
+    "number": "7122",
+    "equipment": "320",
+    "id": "s13",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "10:35:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "11:55:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H20M",
+    "carrier": "P4",
+    "number": "7126",
+    "equipment": "320",
+    "id": "s14",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "14:40:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "16:00:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H20M",
+    "carrier": "P4",
+    "number": "7128",
+    "equipment": "320",
+    "id": "s15",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "18:45:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "20:05:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H20M",
+    "carrier": "P4",
+    "number": "7130",
+    "equipment": "73G",
+    "id": "s16",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "19:00:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "20:20:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 35,
+    "duration": "PT20M",
+    "carrier": "X1",
+    "number": "71",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s17",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "08:10:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "GWI",
+      "date": "2026-12-15",
+      "time": "08:30:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 291,
+    "duration": "PT1H15M",
+    "carrier": "X1",
+    "number": "80",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s18",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "GWI",
+      "date": "2026-12-15",
+      "time": "09:00:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "10:15:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 35,
+    "duration": "PT20M",
+    "carrier": "W1",
+    "number": "3593",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s19",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "08:10:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "GWI",
+      "date": "2026-12-15",
+      "time": "08:30:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "W1",
+    "number": "3590",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s2",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "06:45:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "08:00:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 291,
+    "duration": "PT1H15M",
+    "carrier": "W1",
+    "number": "3543",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s20",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "GWI",
+      "date": "2026-12-15",
+      "time": "09:00:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "10:15:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 281,
+    "duration": "PT1H10M",
+    "carrier": "X1",
+    "number": "67",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s21",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "10:55:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "PHC",
+      "date": "2026-12-15",
+      "time": "12:05:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 299,
+    "duration": "PT1H10M",
+    "carrier": "X1",
+    "number": "74",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s22",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "PHC",
+      "date": "2026-12-15",
+      "time": "12:45:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "13:55:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 281,
+    "duration": "PT1H10M",
+    "carrier": "W1",
+    "number": "3532",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s23",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "10:55:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "PHC",
+      "date": "2026-12-15",
+      "time": "12:05:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 299,
+    "duration": "PT1H10M",
+    "carrier": "W1",
+    "number": "3566",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s24",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "PHC",
+      "date": "2026-12-15",
+      "time": "12:45:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "13:55:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 361,
+    "duration": "PT1H15M",
+    "carrier": "X1",
+    "number": "85",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s25",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "08:00:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "CBQ",
+      "date": "2026-12-15",
+      "time": "09:15:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 302,
+    "duration": "PT1H15M",
+    "carrier": "X1",
+    "number": "396",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s26",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "CBQ",
+      "date": "2026-12-15",
+      "time": "09:55:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "11:10:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 361,
+    "duration": "PT1H15M",
+    "carrier": "W1",
+    "number": "3567",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRK",
+    "id": "s27",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "08:00:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "CBQ",
+      "date": "2026-12-15",
+      "time": "09:15:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 302,
+    "duration": "PT1H15M",
+    "carrier": "W1",
+    "number": "3569",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRK",
+    "id": "s28",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "CBQ",
+      "date": "2026-12-15",
+      "time": "09:55:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "11:10:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "X1",
+    "number": "63",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s3",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "11:40:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "12:55:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "W1",
+    "number": "3536",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s4",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "11:40:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "12:55:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "X1",
+    "number": "1013",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s5",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "14:05:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "15:20:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "W1",
+    "number": "3586",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s6",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "14:05:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "15:20:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "X1",
+    "number": "65",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s7",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "15:30:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "16:45:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "W1",
+    "number": "3534",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CR9",
+    "id": "s8",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "15:30:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "16:45:00"
+    },
+    "AvailabilitySourceCode": "A"
+  },
+  {
+    "@type": "FlightDetail",
+    "distance": 314,
+    "duration": "PT1H15M",
+    "carrier": "X1",
+    "number": "1015",
+    "operatingCarrierName": "VALUEJET",
+    "equipment": "CRJ",
+    "id": "s9",
+    "Departure": {
+      "@type": "DepartureDetail",
+      "location": "LOS",
+      "date": "2026-12-15",
+      "time": "18:00:00"
+    },
+    "Arrival": {
+      "@type": "ArrivalDetail",
+      "location": "ABV",
+      "date": "2026-12-15",
+      "time": "19:15:00"
+    },
+    "AvailabilitySourceCode": "A"
+  }
+]

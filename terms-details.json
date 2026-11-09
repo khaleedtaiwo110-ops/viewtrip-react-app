@@ -1,0 +1,1346 @@
+[
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T0",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/P4",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "P4",
+        "ProductRef": [
+          "p0",
+          "p1",
+          "p2",
+          "p3",
+          "p4"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 20
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "P4",
+        "ProductRef": [
+          "p0",
+          "p1",
+          "p2",
+          "p3",
+          "p4"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO13LB/6KG AND UPTO46LI/118LCM"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ],
+        "Text": [
+          "1P"
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "W2"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-09T12:19:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 5
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyPercent",
+                "Percent": 100
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T1",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/P4",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "P4",
+        "ProductRef": [
+          "p5"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 20
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "P4",
+        "ProductRef": [
+          "p5"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO13LB/6KG AND UPTO46LI/118LCM"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ],
+        "Text": [
+          "1P"
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "W2"
+      }
+    ],
+    "PaymentTimeLimit": "2026-12-15T23:59:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "NoShow"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 10
+                }
+              }
+            ]
+          },
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 10
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyPercent",
+                "Percent": 100
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T2",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/W1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "W1",
+        "ProductRef": [
+          "p6",
+          "p7",
+          "p8",
+          "p9",
+          "p10"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 23
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "W1",
+        "ProductRef": [
+          "p6",
+          "p7",
+          "p8",
+          "p9",
+          "p10"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 7
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "W2"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-10T11:49:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "BeforeDeparture"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 7
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "BeforeDeparture"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 11
+                }
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T3",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/X1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p11",
+          "p12",
+          "p13",
+          "p14",
+          "p15"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO50LB/23KG"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ],
+        "Text": [
+          "1P"
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/X1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "SecondCheckedBag",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p11",
+          "p12",
+          "p13",
+          "p14",
+          "p15"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "No",
+            "soldByPieceInd": true,
+            "Text": "BAGGAGE CHARGES DATA NOT AVAILABLE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ],
+        "Text": [
+          "1P"
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p11",
+          "p12",
+          "p13",
+          "p14",
+          "p15"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO15LB/7KG AND UPTO41LI/105LCM"
+          }
+        ],
+        "SegmentSequenceList": [
+          1
+        ],
+        "Text": [
+          "1P"
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "HR"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-12T11:49:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 18
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyPercent",
+                "Percent": 100
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T4",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/W1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "W1",
+        "ProductRef": [
+          "p16"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 23
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "W1",
+        "ProductRef": [
+          "p16"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 7
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "W2"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-10T11:49:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "BeforeDeparture"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 7
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "BeforeDeparture"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 11
+                }
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T5",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/W1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "W1",
+        "ProductRef": [
+          "p17"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 23
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "W1",
+        "ProductRef": [
+          "p17"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 7
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "W2"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-10T11:49:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "BeforeDeparture"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 7
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "BeforeDeparture"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 11
+                }
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T6",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/W1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "W1",
+        "ProductRef": [
+          "p18"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 23
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "W1",
+        "ProductRef": [
+          "p18"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "includedInOfferPrice": "Yes",
+            "soldByWeightInd": true,
+            "Measurement": [
+              {
+                "measurementType": "Weight",
+                "unit": "Kilograms",
+                "value": 7
+              }
+            ],
+            "Text": "CHGS MAY APPLY IF BAGS EXCEED TTL WT ALLOWANCE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "W2"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-10T11:49:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "BeforeDeparture"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 7
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "BeforeDeparture"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 11
+                }
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T7",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/X1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p19"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO50LB/23KG"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/X1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "SecondCheckedBag",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p19"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "No",
+            "soldByPieceInd": true,
+            "Text": "BAGGAGE CHARGES DATA NOT AVAILABLE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p19"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO15LB/7KG AND UPTO41LI/105LCM"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "HR"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-12T11:49:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 18
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyPercent",
+                "Percent": 100
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T8",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/X1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p20"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO50LB/23KG"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/X1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "SecondCheckedBag",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p20"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "No",
+            "soldByPieceInd": true,
+            "Text": "BAGGAGE CHARGES DATA NOT AVAILABLE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p20"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO15LB/7KG AND UPTO41LI/105LCM"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "HR"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-12T11:49:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 18
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyPercent",
+                "Percent": 100
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  },
+  {
+    "@type": "TermsAndConditionsAir",
+    "id": "T9",
+    "BaggageAllowance": [
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/X1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "FirstCheckedBag",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p21"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO50LB/23KG"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "url": "http://VIEWTRIP.TRAVELPORT.COM/BAGGAGEPOLICY/X1",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "SecondCheckedBag",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p21"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "No",
+            "soldByPieceInd": true,
+            "Text": "BAGGAGE CHARGES DATA NOT AVAILABLE"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      },
+      {
+        "@type": "BaggageAllowanceDetail",
+        "passengerTypeCodes": [
+          "ADT"
+        ],
+        "baggageType": "CarryOn",
+        "validatingAirlineCode": "X1",
+        "ProductRef": [
+          "p21"
+        ],
+        "BaggageItem": [
+          {
+            "@type": "BaggageItem",
+            "quantity": 1,
+            "includedInOfferPrice": "Yes",
+            "soldByPieceInd": true,
+            "BaggageFee": {
+              "code": "GBP",
+              "approximateInd": true,
+              "value": 0
+            },
+            "Text": "UPTO15LB/7KG AND UPTO41LI/105LCM"
+          }
+        ],
+        "SegmentSequenceList": [
+          1,
+          2
+        ],
+        "Text": [
+          "1P"
+        ]
+      }
+    ],
+    "ValidatingAirline": [
+      {
+        "@type": "ValidatingAirline",
+        "ValidatingAirline": "HR"
+      }
+    ],
+    "PaymentTimeLimit": "2026-11-12T11:49:00Z",
+    "Penalties": [
+      {
+        "@type": "Penalties",
+        "Change": [
+          {
+            "@type": "ChangePermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyAmount",
+                "Amount": {
+                  "code": "GBP",
+                  "minorUnit": 2,
+                  "value": 18
+                }
+              }
+            ]
+          }
+        ],
+        "Cancel": [
+          {
+            "@type": "CancelPermitted",
+            "penaltyTypes": [
+              "Anytime"
+            ],
+            "PenaltyAppliesTo": "PerTicket",
+            "Penalty": [
+              {
+                "@type": "PenaltyPercent",
+                "Percent": 100
+              }
+            ]
+          }
+        ],
+        "PassengerTypeCodes": [
+          "ADT"
+        ]
+      }
+    ]
+  }
+]

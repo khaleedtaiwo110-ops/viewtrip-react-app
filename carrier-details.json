@@ -1,0 +1,192 @@
+[
+  {
+    "flightId": "s1",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s10",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s11",
+    "carrierFields": {
+      "carrier": "P4"
+    }
+  },
+  {
+    "flightId": "s12",
+    "carrierFields": {
+      "carrier": "P4"
+    }
+  },
+  {
+    "flightId": "s13",
+    "carrierFields": {
+      "carrier": "P4"
+    }
+  },
+  {
+    "flightId": "s14",
+    "carrierFields": {
+      "carrier": "P4"
+    }
+  },
+  {
+    "flightId": "s15",
+    "carrierFields": {
+      "carrier": "P4"
+    }
+  },
+  {
+    "flightId": "s16",
+    "carrierFields": {
+      "carrier": "P4"
+    }
+  },
+  {
+    "flightId": "s17",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s18",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s19",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s2",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s20",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s21",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s22",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s23",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s24",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s25",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s26",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s27",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s28",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s3",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s4",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s5",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s6",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s7",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s8",
+    "carrierFields": {
+      "carrier": "W1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  },
+  {
+    "flightId": "s9",
+    "carrierFields": {
+      "carrier": "X1",
+      "operatingCarrierName": "VALUEJET"
+    }
+  }
+]

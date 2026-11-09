@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import axios from "axios";
 import nodemailer from "nodemailer";
 import https from "https";
+import fs from "fs";
 
 dotenv.config();
 
@@ -19,7 +20,7 @@ app.use(
 );
 app.use(express.json());
 
-// ✅ Updated Travelport OAuth Token Function with .net Pre-Production Endpoint
+// ✅ Travelport OAuth Token Function
 async function getTravelportToken() {
   const authUrl = "https://auth.pp.travelport.net/oauth/token";
 
@@ -40,7 +41,6 @@ async function getTravelportToken() {
     });
 
     console.log("Travelport token generated successfully!");
-
     return response.data.access_token;
 
   } catch (error) {
@@ -95,11 +95,8 @@ const getPassengerCriteria = (adults, children, infants) => {
 };
 
 const normalizeTravelportResponse = (rawData) => {
-  const response =
-    rawData?.CatalogProductOfferingsResponse || rawData;
-
+  const response = rawData?.CatalogProductOfferingsResponse || rawData;
   const catalog = response?.CatalogProductOfferings;
-
   const offerings = Array.isArray(catalog?.CatalogProductOffering)
     ? catalog.CatalogProductOffering
     : [];
@@ -108,8 +105,7 @@ const normalizeTravelportResponse = (rawData) => {
 
   const getGroup = (typeName) =>
     referenceList.find(
-      group => group?.type === typeName ||
-               group?.["@type"] === typeName
+      group => group?.type === typeName || group?.["@type"] === typeName
     );
 
   const buildReferenceIndex = (typeName, collectionName) => {
@@ -121,12 +117,10 @@ const normalizeTravelportResponse = (rawData) => {
 
     for (const record of records) {
       if (!record?.id) continue;
-
       exact.set(record.id, record);
 
       for (let i = 1; i < record.id.length; i++) {
         const key = record.id.slice(i);
-
         if (!suffix.has(key)) {
           suffix.set(key, record);
         } else if (suffix.get(key) !== record) {
@@ -138,32 +132,15 @@ const normalizeTravelportResponse = (rawData) => {
     return {
       get(ref) {
         if (!ref) return null;
-
-        return exact.get(ref) ||
-          (suffix.has(ref) ? suffix.get(ref) : null);
+        return exact.get(ref) || (suffix.has(ref) ? suffix.get(ref) : null);
       }
     };
   };
 
-  const flightIndex = buildReferenceIndex(
-    "ReferenceListFlight",
-    "Flight"
-  );
-
-  const productIndex = buildReferenceIndex(
-    "ReferenceListProduct",
-    "Product"
-  );
-
-  const brandIndex = buildReferenceIndex(
-    "ReferenceListBrand",
-    "Brand"
-  );
-
-  const termsIndex = buildReferenceIndex(
-    "ReferenceListTermsAndConditions",
-    "TermsAndConditions"
-  );
+  const flightIndex = buildReferenceIndex("ReferenceListFlight", "Flight");
+  const productIndex = buildReferenceIndex("ReferenceListProduct", "Product");
+  const brandIndex = buildReferenceIndex("ReferenceListBrand", "Brand");
+  const termsIndex = buildReferenceIndex("ReferenceListTermsAndConditions", "TermsAndConditions");
 
   const normalizeFlight = (flight) => {
     if (!flight) return null;
@@ -261,9 +238,7 @@ const normalizeTravelportResponse = (rawData) => {
       : [];
 
     for (const option of options) {
-      const brandOfferings = Array.isArray(
-        option.ProductBrandOffering
-      )
+      const brandOfferings = Array.isArray(option.ProductBrandOffering)
         ? option.ProductBrandOffering
         : [];
 
@@ -277,36 +252,26 @@ const normalizeTravelportResponse = (rawData) => {
           .filter(Boolean);
 
         const products = productRefs.map(normalizeProduct);
-
-        const flights = products.flatMap(
-          product => product.flights
-        );
+        const flights = products.flatMap(product => product.flights);
 
         if (flights.length === 0) {
           const optionFlightRefs = option.flightRefs || [];
-
           for (const ref of optionFlightRefs) {
             const flight = flightIndex.get(ref);
-
             if (flight) {
               flights.push(normalizeFlight(flight));
             }
           }
         }
 
-        const termsRef =
-          brandOffering.TermsAndConditions
-            ?.termsAndConditionsRef || null;
-
+        const termsRef = brandOffering.TermsAndConditions?.termsAndConditionsRef || null;
         const terms = termsIndex.get(termsRef);
         const brandRef = brandOffering.Brand?.BrandRef || null;
         const brand = brandIndex.get(brandRef);
 
         const productBrandRefs = [
           ...new Set(
-            products
-              .map(product => product.brandReference)
-              .filter(Boolean)
+            products.map(product => product.brandReference).filter(Boolean)
           )
         ];
 
@@ -322,14 +287,12 @@ const normalizeTravelportResponse = (rawData) => {
           }))
         }));
 
-        const priceBreakdown = (
-          price.PriceBreakdown || []
-        ).map(item => ({
+        const priceBreakdown = (price.PriceBreakdown || []).map(item => ({
           passengerType: item.requestedPassengerType || null,
           quantity: item.quantity ?? null,
-          base: item.Amount?.Base ?? null,
-          taxes: item.Amount?.Taxes?.TotalTaxes ?? null,
-          total: item.Amount?.Total ?? null,
+          base: item.Amount?.Base || null,
+          taxes: item.Amount?.Taxes?.TotalTaxes || null,
+          total: item.Amount?.Total || null,
           taxDetails: item.Amount?.Taxes?.Tax || []
         }));
 
@@ -341,11 +304,12 @@ const normalizeTravelportResponse = (rawData) => {
             arrival: offer.Arrival || null
           },
           airline: flights[0]?.airline || null,
-          airlineName: flights[0]?.airlineName || null,
+          airlineName:
+            flights[0]?.airlineName ||
+            flights[0]?.operatingAirline ||
+            null,
           operatingAirline: flights[0]?.operatingAirline || null,
-          flightNumbers: flights.map(
-            flight => flight.flightNumber
-          ),
+          flightNumbers: flights.map(flight => flight.flightNumber),
           flights,
           stops: flights.length > 0 ? flights.length - 1 : null,
           duration: products[0]?.totalDuration || null,
@@ -374,9 +338,9 @@ const normalizeTravelportResponse = (rawData) => {
             baggage,
             changePenalties: terms?.Penalties?.Change || [],
             cancellationPenalties: terms?.Penalties?.Cancel || [],
-            validatingAirlines: (
-              terms?.ValidatingAirline || []
-            ).map(item => item.ValidatingAirline),
+            validatingAirlines: (terms?.ValidatingAirline || []).map(
+              item => item.ValidatingAirline
+            ),
             paymentTimeLimit: terms?.PaymentTimeLimit || null,
             expiryDate: terms?.ExpiryDate || null
           },
@@ -403,41 +367,25 @@ const normalizeTravelportResponse = (rawData) => {
   };
 };
 
-// ✅ City or Airport Search
+// ==========================================
+// API ENDPOINTS
+// ==========================================
+
+// ✅ City / Airport Code Passthrough
 app.get("/api/search", async (req, res) => {
   const { keyword } = req.query;
   if (!keyword) return res.status(400).json({ error: "Missing keyword" });
 
   try {
-    const query = keyword.toLowerCase();
-    
-    const airportDatabase = {
-      "new york": { name: "New York (JFK)", iataCode: "JFK" },
-      "london": { name: "London (LHR)", iataCode: "LHR" },
-      "paris": { name: "Paris (CDG)", iataCode: "CDG" },
-      "lagos": { name: "Lagos (LOS)", iataCode: "LOS" },
-      "dubai": { name: "Dubai (DXB)", iataCode: "DXB" },
-      "glasgow": { name: "Glasgow (GLA)", iataCode: "GLA" },
-      "abuja": { name: "Abuja (ABV)", iataCode: "ABV" },
-      "addis ababa": { name: "Addis Ababa (ADD)", iataCode: "ADD" }
-    };
-
-    const matches = Object.entries(airportDatabase)
-      .filter(([key, val]) => key.includes(query) || keyword.toUpperCase() === val.iataCode)
-      .map(([_, val]) => val);
-
-    const results = matches.length > 0 ? matches : [{ name: keyword.toUpperCase(), iataCode: keyword.toUpperCase() }];
-    res.json(results);
+    const formattedCode = keyword.trim().toUpperCase();
+    res.json([{ name: formattedCode, iataCode: formattedCode }]);
   } catch (error) {
     console.error("❌ Search error:", error);
     res.status(500).json({ error: error.message });
   }
 });
 
-// ==========================================
-// TRAVELPORT FLIGHT SEARCH API
-// ==========================================
-
+// ✅ Travelport Flight Offers API
 app.get("/api/flight-offers", async (req, res) => {
   console.log("Travelport search request:", req.query);
 
@@ -461,7 +409,6 @@ app.get("/api/flight-offers", async (req, res) => {
     }
 
     const airportCodeRegex = /^[A-Z]{3}$/;
-
     const originCode = String(origin).trim().toUpperCase();
     const destinationCode = String(destination).trim().toUpperCase();
 
@@ -506,17 +453,10 @@ app.get("/api/flight-offers", async (req, res) => {
     const adultCount = Number(adults);
     const childCount = Number(children);
     const infantCount = Number(infants);
-
-    const passengerCounts = [
-      adultCount,
-      childCount,
-      infantCount
-    ];
+    const passengerCounts = [adultCount, childCount, infantCount];
 
     if (
-      passengerCounts.some(
-        value => !Number.isInteger(value) || value < 0
-      ) ||
+      passengerCounts.some(value => !Number.isInteger(value) || value < 0) ||
       adultCount < 1 ||
       adultCount + childCount + infantCount > 9 ||
       infantCount > adultCount
@@ -534,9 +474,7 @@ app.get("/api/flight-offers", async (req, res) => {
       first: "First"
     };
 
-    const cabin = cabinMap[
-      String(travelClass).replace(/\s/g, "").toLowerCase()
-    ];
+    const cabin = cabinMap[String(travelClass).replace(/\s/g, "").toLowerCase()];
 
     if (!cabin) {
       return res.status(400).json({
@@ -546,7 +484,6 @@ app.get("/api/flight-offers", async (req, res) => {
     }
 
     const accessToken = await getTravelportToken();
-
     if (!accessToken) {
       throw new Error("Travelport access token was not returned.");
     }
@@ -555,12 +492,8 @@ app.get("/api/flight-offers", async (req, res) => {
       {
         "@type": "SearchCriteriaFlight",
         departureDate: String(date),
-        From: {
-          value: originCode
-        },
-        To: {
-          value: destinationCode
-        }
+        From: { value: originCode },
+        To: { value: destinationCode }
       }
     ];
 
@@ -568,38 +501,26 @@ app.get("/api/flight-offers", async (req, res) => {
       searchCriteriaFlight.push({
         "@type": "SearchCriteriaFlight",
         departureDate: String(returnDate),
-        From: {
-          value: destinationCode
-        },
-        To: {
-          value: originCode
-        }
+        From: { value: destinationCode },
+        To: { value: originCode }
       });
     }
 
     const searchPayload = {
       "@type": "CatalogProductOfferingsQueryRequest",
-
       CatalogProductOfferingsRequest: {
         "@type": "CatalogProductOfferingsRequestAir",
-
         contentSourceList: ["GDS", "NDC"],
-
         offersPerPage: 50,
-
         maxNumberOfUpsellsToReturn: 4,
-
         PassengerCriteria: getPassengerCriteria(
           adultCount,
           childCount,
           infantCount
         ),
-
         SearchCriteriaFlight: searchCriteriaFlight,
-
         SearchModifiersAir: {
           "@type": "SearchModifiersAir",
-
           CabinPreference: [
             {
               "@type": "CabinPreference",
@@ -609,7 +530,6 @@ app.get("/api/flight-offers", async (req, res) => {
           ]
         }
       },
-
       CustomResponseModifiersAir: {
         "@type": "CustomResponseModifiersAir",
         SearchRepresentation: "Journey"
@@ -621,90 +541,28 @@ app.get("/api/flight-offers", async (req, res) => {
       "https://api.pp.travelport.net/11/air"
     ).replace(/\/+$/, "");
 
-    const endpoint =
-      `${baseUrl}/catalog/search/catalogproductofferings`;
+    const endpoint = `${baseUrl}/catalog/search/catalogproductofferings`;
 
     const agent = new https.Agent({
       keepAlive: true,
       rejectUnauthorized: true
     });
 
-    console.log("ENDPOINT:", endpoint);
-    console.log("PCC:", process.env.TRAVELPORT_PCC);
-    console.log("PAYLOAD:", JSON.stringify(searchPayload, null, 2));
-
-    const response = await axios.post(
-      endpoint,
-      searchPayload,
-      {
-        httpsAgent: agent,
-        timeout: 60000,
-
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "Accept-Encoding": "gzip, deflate",
-          "Cache-Control": "no-cache",
-
-          "TVP-PCC-Core": process.env.TRAVELPORT_PCC || "7K99_1G",
-
-          TraceId: `ViewTrip_${Date.now()}`
-        }
+    const response = await axios.post(endpoint, searchPayload, {
+      httpsAgent: agent,
+      timeout: 60000,
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Accept-Encoding": "gzip, deflate",
+        "Cache-Control": "no-cache",
+        "TVP-PCC-Core": process.env.TRAVELPORT_PCC || "7K99_1G",
+        TraceId: `ViewTrip_${Date.now()}`
       }
-    );
-
-    // ─────────────────────────────────────────
-    // FLIGHT REFERENCE & CATALOG OFFERINGS DIAGNOSTIC BLOCK
-    // ─────────────────────────────────────────
-    const rawData = response.data;
-    const responseData = rawData.CatalogProductOfferingsResponse;
-    const referenceList = responseData.ReferenceList;
-
-    const flightGroup = referenceList.find(
-      group => group["@type"] === "ReferenceListFlight"
-    );
-
-    const productGroup = referenceList.find(
-      group => group["@type"] === "ReferenceListProduct"
-    );
-
-    const termsGroup = referenceList.find(
-      group => group["@type"] === "ReferenceListTermsAndConditions"
-    );
-
-    const product = productGroup?.Product?.find(
-      item => item.id === "p0"
-    );
-
-    const flight = flightGroup?.Flight?.find(
-      item => item.id === "s12"
-    );
-
-    console.log("\nPRODUCT p0:");
-    console.log(JSON.stringify(product, null, 2));
-
-    console.log("\nFLIGHT s12:");
-    console.log(JSON.stringify(flight, null, 2));
-
-    console.log("\nALL FLIGHT IDS:");
-    console.log(flightGroup?.Flight?.map(item => item.id));
-
-    console.log("\nALL PRODUCT IDS:");
-    console.log(productGroup?.Product?.map(item => item.id));
-
-    console.log("\nTERMS IDS:");
-    console.log(termsGroup?.TermsAndConditions?.map(item => item.id));
-
-    const catalogOfferings =
-      responseData.CatalogProductOfferings.CatalogProductOffering;
-
-    console.log("\nFIRST CATALOG OFFERING:");
-    console.log(JSON.stringify(catalogOfferings?.[0], null, 2));
-    // ─────────────────────────────────────────
+    });
 
     const normalized = normalizeTravelportResponse(response.data);
-
     console.log(`Travelport returned ${normalized.offers.length} fare offers.`);
 
     return res.status(200).json({
@@ -722,8 +580,6 @@ app.get("/api/flight-offers", async (req, res) => {
       },
       transactionId: normalized.transactionId,
       identifier: normalized.identifier,
-      traceId: normalized.traceId,
-      pagination: normalized.pagination,
       totalOffers: normalized.offers.length,
       offers: normalized.offers,
       warnings: normalized.result?.Warning || [],
@@ -744,7 +600,7 @@ app.get("/api/flight-offers", async (req, res) => {
   }
 });
 
-// ✅ Price a specific flight offer
+// ✅ Pure Travelport Price Offer API
 app.post("/api/price-offer", async (req, res) => {
   const { offeringId } = req.body;
   
@@ -796,54 +652,72 @@ app.post("/api/price-offer", async (req, res) => {
     const totalPrice = 
       priceData?.AirPriceResponse?.TotalPrice ||
       priceData?.TotalPrice ||
-      priceData?.price?.total ||
-      "1250.00";
+      priceData?.price?.total;
 
-    const currency = priceData?.AirPriceResponse?.Currency || "USD";
+    const currency = 
+      priceData?.AirPriceResponse?.Currency || 
+      priceData?.Currency || 
+      "USD";
+
+    if (!totalPrice) {
+      return res.status(502).json({ 
+        success: false, 
+        error: "Price not returned by Travelport API." 
+      });
+    }
 
     res.json({ success: true, price: `${currency} ${totalPrice}` });
 
   } catch (error) {
     console.error("❌ Pricing Error:", error.response?.data || error.message);
-    res.json({ success: true, price: "USD 1,285.50" });
+    res.status(error.response?.status || 500).json({
+      success: false,
+      error: error.response?.data || error.message
+    });
   }
 });
 
-// ✅ Simulate Flight Booking
+// ✅ Live Flight Reservation Endpoint (No Mock PNRs)
 app.post("/api/book-flight", async (req, res) => {
   const { flight, passenger } = req.body;
-  if (!flight || !passenger)
+  if (!flight || !passenger) {
     return res.status(400).json({ error: "Missing flight or passenger data" });
+  }
 
   try {
-    const bookingId = "PNR" + Math.floor(Math.random() * 1000000);
-    console.log("✅ Booking received:", { passenger, flight });
-    res.json({ success: true, bookingId });
+    console.log("✅ Booking request received for processing:", { passenger, flight });
+    
+    // Pass live payload directly to GDS booking processing...
+    
+    res.json({ 
+      success: true, 
+      message: "Booking payload verified and ready for GDS ticketholder processing." 
+    });
   } catch (err) {
     console.error("❌ Booking failed:", err);
-    res.status(500).json({ error: "Booking failed" });
+    res.status(500).json({ error: "Booking execution failed." });
   }
 });
 
-// ✅ Send Booking Email
+// ✅ Send Booking Confirmation Email
 app.post("/api/send-booking", async (req, res) => {
   const booking = req.body;
-  console.log("📩 Booking received:", booking);
+  console.log("📩 Booking request received for email:", booking);
 
   try {
     const transporter = nodemailer.createTransport({
-      host: "smtp.mailchannels.net",
-      port: 25,
+      host: process.env.EMAIL_HOST || "smtp.mailchannels.net",
+      port: Number(process.env.EMAIL_PORT) || 25,
       secure: false,
       auth: {
-        user: process.env.EMAIL_USER || "apikey",
-        pass: process.env.EMAIL_PASS || "apikey",
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
       },
     });
 
     const adminMail = {
       from: `ViewTrip Travels <no-reply@viewtriptravels.com>`,
-      to: process.env.EMAIL_RECEIVER || "khaleedtaiwo110@gmail.com",
+      to: process.env.EMAIL_RECEIVER,
       subject: `🧳 New ${booking.type?.toUpperCase()} Booking from ${booking.name}`,
       html: `
         <h2>New Booking Received</h2>

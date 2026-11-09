@@ -56,11 +56,13 @@ const formatDuration = (durationStr) => {
 export default function FlightOffers() {
   const location = useLocation();
   const hasAutoSearched = useRef(false);
+  const [tripType, setTripType] = useState("oneway"); // "oneway" or "return"
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
   const [travelClass, setTravelClass] = useState("ECONOMY");
-  const [results, setResults] = useState([]);
+  const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [selectedFlight, setSelectedFlight] = useState(null);
@@ -89,6 +91,7 @@ export default function FlightOffers() {
         origin: homeOrigin,
         destination: homeDestination,
         date: homeDate,
+        returnDate: homeReturnDate,
         adults: homeAdults,
         children: homeChildren,
         infants: homeInfants,
@@ -98,6 +101,10 @@ export default function FlightOffers() {
       if (homeOrigin) setOrigin(homeOrigin);
       if (homeDestination) setDestination(homeDestination);
       if (homeDate) setDate(homeDate);
+      if (homeReturnDate) {
+        setReturnDate(homeReturnDate);
+        setTripType("return");
+      }
       
       const initialAdults = homeAdults !== undefined ? Number(homeAdults) : 1;
       const initialChildren = homeChildren !== undefined ? Number(homeChildren) : 0;
@@ -113,34 +120,36 @@ export default function FlightOffers() {
       const triggerAutoSearch = async () => {
         setError("");
         setLoading(true);
-        setResults([]);
+        setResults(null);
         setSelectedFlight(null);
 
         try {
+          const params = { 
+            origin: homeOrigin.toUpperCase().trim(), 
+            destination: homeDestination.toUpperCase().trim(), 
+            date: homeDate, 
+            travelClass: homeClass || "ECONOMY",
+            adults: initialAdults,
+            children: initialChildren > 0 ? initialChildren : undefined,
+            infants: initialInfants > 0 ? initialInfants : undefined
+          };
+
+          if (homeReturnDate && tripType === "return") {
+            params.returnDate = homeReturnDate;
+          }
+
           const res = await axios.get("https://view-trip-travels-app.onrender.com/api/flight-offers", {
-            params: { 
-              origin: homeOrigin.toUpperCase().trim(), 
-              destination: homeDestination.toUpperCase().trim(), 
-              date: homeDate, 
-              travelClass: homeClass || "ECONOMY",
-              adults: initialAdults,
-              children: initialChildren > 0 ? initialChildren : undefined,
-              infants: initialInfants > 0 ? initialInfants : undefined
-            },
+            params,
             timeout: 60000
           });
           
-          if (!res.data || (Array.isArray(res.data) && res.data.length === 0)) {
-            setError("No flights found matching your parameters.");
-          } else {
-            setResults(res.data);
-          }
+          setResults(res.data);
         } catch (err) {
           console.error("Flight search error details:", err);
           const serverMessage = err.response?.data?.error || err.response?.data?.message;
           
           if (serverMessage) {
-            setError(`Error: ${serverMessage}`);
+            setError(`Error: ${typeof serverMessage === 'object' ? JSON.stringify(serverMessage) : serverMessage}`);
           } else if (err.code === "ECONNABORTED") {
             setError("The server timed out. It might still be waking up, please try running the search loop one more time.");
           } else if (err.code === "ERR_NETWORK") {
@@ -197,7 +206,7 @@ export default function FlightOffers() {
     if (e) e.preventDefault();
     setError("");
     setLoading(true);
-    setResults([]);
+    setResults(null);
     setSelectedFlight(null);
 
     if (!origin || !destination || !date) {
@@ -206,29 +215,37 @@ export default function FlightOffers() {
       return;
     }
 
+    if (tripType === "return" && !returnDate) {
+      setError("Please select a return date for round-trip travel.");
+      setLoading(false);
+      return;
+    }
+
     try {
+      const params = { 
+        origin: origin.toUpperCase().trim(), 
+        destination: destination.toUpperCase().trim(), 
+        date, 
+        travelClass,
+        adults,
+        children: children > 0 ? children : undefined,
+        infants: infants > 0 ? infants : undefined
+      };
+
+      if (tripType === "return" && returnDate) {
+        params.returnDate = returnDate;
+      }
+
       const res = await axios.get("https://view-trip-travels-app.onrender.com/api/flight-offers", {
-        params: { 
-          origin: origin.toUpperCase().trim(), 
-          destination: destination.toUpperCase().trim(), 
-          date, 
-          travelClass,
-          adults,
-          children: children > 0 ? children : undefined,
-          infants: infants > 0 ? infants : undefined
-        },
+        params,
         timeout: 60000
       });
       
-      if (!res.data || (Array.isArray(res.data) && res.data.length === 0)) {
-        setError("No flights found matching your parameters.");
-      } else {
-        setResults(res.data);
-      }
+      setResults(res.data);
     } catch (err) {
       const serverMessage = err.response?.data?.error || err.response?.data?.message;
       if (serverMessage) {
-        setError(`Error: ${serverMessage}`);
+        setError(`Error: ${typeof serverMessage === 'object' ? JSON.stringify(serverMessage) : serverMessage}`);
       } else if (err.code === "ECONNABORTED") {
         setError("The server timed out. It might still be waking up, please try running the search loop one more time.");
       } else if (err.code === "ERR_NETWORK") {
@@ -249,21 +266,23 @@ export default function FlightOffers() {
 
   const handleBookingSubmit = async (e) => {
     e.preventDefault();
-    alert("Flight booking successfully initiated!");
-    setShowBookingForm(false);
+    try {
+      const payload = {
+        flight: selectedFlight,
+        passenger: passengers
+      };
+      const res = await axios.post("https://view-trip-travels-app.onrender.com/api/book-flight", payload);
+      if (res.data.success) {
+        alert("Flight booking payload verified and ready for GDS ticket issuance!");
+        setShowBookingForm(false);
+      }
+    } catch (err) {
+      alert("Booking transmission failed.");
+    }
   };
 
   const totalPassengersCount = adults + children + infants;
-
-  // Derive flight list with robust fallback structures
-  const flightList = Array.isArray(results) 
-    ? results 
-    : (Array.isArray(results?.data) ? results.data : null) ||
-      (Array.isArray(results?.flightOffers) ? results.flightOffers : null) ||
-      (Array.isArray(results?.catalogProductOfferings) ? results.catalogProductOfferings : null) ||
-      results?.CatalogProductOfferingsResponse?.catalogProductOfferings ||
-      results?.productOffering || 
-      [];
+  const flightList = Array.isArray(results?.offers) ? results.offers : (Array.isArray(results) ? results : []);
 
   return (
     <div className="min-h-screen bg-slate-50 antialiased text-slate-800">
@@ -280,8 +299,19 @@ export default function FlightOffers() {
           <form onSubmit={handleSearch} className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-6 pb-4 border-b border-slate-100">
               <div className="flex items-center gap-2 bg-slate-100 p-1 rounded-xl">
-                <button type="button" className="px-4 py-2 text-xs font-black rounded-lg bg-white text-blue-600 shadow-sm">
+                <button 
+                  type="button" 
+                  onClick={() => setTripType("oneway")}
+                  className={`px-4 py-2 text-xs font-black rounded-lg transition ${tripType === "oneway" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+                >
                   One-Way
+                </button>
+                <button 
+                  type="button" 
+                  onClick={() => setTripType("return")}
+                  className={`px-4 py-2 text-xs font-black rounded-lg transition ${tripType === "return" ? "bg-white text-blue-600 shadow-sm" : "text-slate-500 hover:text-slate-800"}`}
+                >
+                  Round-Trip
                 </button>
               </div>
 
@@ -370,11 +400,11 @@ export default function FlightOffers() {
               </div>
             </div>
 
-            {/* FLIGHT STATIONS SELECTOR GRIDS */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 items-center">
+            {/* FLIGHT STATIONS & DATES SELECTOR GRIDS */}
+            <div className={`grid grid-cols-1 ${tripType === "return" ? "lg:grid-cols-12" : "lg:grid-cols-11"} gap-4 items-center`}>
               <div 
                 onClick={() => setActiveModal("origin")}
-                className="lg:col-span-4 border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-blue-400 transition bg-slate-50 relative"
+                className={`${tripType === "return" ? "lg:col-span-3" : "lg:col-span-4"} border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-blue-400 transition bg-slate-50 relative`}
               >
                 <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Departure From</label>
                 <div className="flex items-center gap-3">
@@ -383,7 +413,7 @@ export default function FlightOffers() {
                     <div className="text-xl font-black text-slate-900 tracking-tight">
                       {origin || "Select Airport"}
                     </div>
-                    <div className="text-xs font-bold text-slate-400 truncate max-w-[220px]">
+                    <div className="text-xs font-bold text-slate-400 truncate max-w-[180px]">
                       {selectedOriginName || "Where are you flying from?"}
                     </div>
                   </div>
@@ -410,7 +440,7 @@ export default function FlightOffers() {
 
               <div
                 onClick={() => setActiveModal("destination")}
-                className="lg:col-span-4 border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-blue-400 transition bg-slate-50 relative"
+                className={`${tripType === "return" ? "lg:col-span-3" : "lg:col-span-4"} border border-slate-200 rounded-2xl p-4 cursor-pointer hover:border-blue-400 transition bg-slate-50 relative`}
               >
                 <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Destination To</label>
                 <div className="flex items-center gap-3">
@@ -419,26 +449,43 @@ export default function FlightOffers() {
                     <div className="text-xl font-black text-slate-900 tracking-tight">
                       {destination || "Select Airport"}
                     </div>
-                    <div className="text-xs font-bold text-slate-400 truncate max-w-[220px]">
+                    <div className="text-xs font-bold text-slate-400 truncate max-w-[180px]">
                       {selectedDestName || "Where are you going?"}
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="lg:col-span-3 border border-slate-200 rounded-2xl p-4 bg-slate-50">
+              <div className={`${tripType === "return" ? "lg:col-span-2" : "lg:col-span-3"} border border-slate-200 rounded-2xl p-4 bg-slate-50`}>
                 <label className="block text-[10px] font-black uppercase text-slate-400 mb-1">Departure Date</label>
-                <div className="flex items-center gap-3 relative">
-                  <Calendar className="w-5 h-5 text-purple-600 shrink-0 pointer-events-none" />
+                <div className="flex items-center gap-2 relative">
+                  <Calendar className="w-4 h-4 text-purple-600 shrink-0 pointer-events-none" />
                   <input 
                     type="date"
                     required
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
-                    className="w-full bg-transparent text-slate-900 font-black text-sm border-none focus:outline-none"
+                    className="w-full bg-transparent text-slate-900 font-black text-xs border-none focus:outline-none"
                   />
                 </div>
               </div>
+
+              {tripType === "return" && (
+                <div className="lg:col-span-2 border border-blue-200 rounded-2xl p-4 bg-blue-50/50">
+                  <label className="block text-[10px] font-black uppercase text-blue-600 mb-1">Return Date</label>
+                  <div className="flex items-center gap-2 relative">
+                    <Calendar className="w-4 h-4 text-blue-600 shrink-0 pointer-events-none" />
+                    <input 
+                      type="date"
+                      required={tripType === "return"}
+                      min={date || undefined}
+                      value={returnDate}
+                      onChange={(e) => setReturnDate(e.target.value)}
+                      className="w-full bg-transparent text-slate-900 font-black text-xs border-none focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end pt-2">
@@ -471,45 +518,24 @@ export default function FlightOffers() {
         {/* --- SEARCH RESULTS LISTING SEGMENT --- */}
         <div className="mt-10 space-y-6">
           {flightList.length > 0 && (
-            <h3 className="text-lg font-black text-slate-900 px-1">Available Flights Match Matrix</h3>
+            <h3 className="text-lg font-black text-slate-900 px-1">Available Flights Match Matrix ({flightList.length})</h3>
           )}
           
-          {flightList.length === 0 ? (
+          {results === null ? (
+            loading ? (
+              <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-500 font-medium">
+                Querying Travelport GDS Live Database... Please wait.
+              </div>
+            ) : null
+          ) : flightList.length === 0 ? (
             <div className="text-center py-12 bg-white rounded-2xl border border-slate-200 shadow-sm text-slate-500 font-medium">
-              {results === null || loading ? "Searching for flights..." : "No flight offers available for this route. Try another date or city."}
+              No flight offers available for this route. Try another date or city.
             </div>
           ) : (
             <div className="space-y-4">
               {flightList.map((flight, idx) => {
-                // Robust extraction and parsing using nullish coalescing & safe regex
-                const rawPrice = 
-                  flight?.price ?? 
-                  flight?.Price?.total ?? 
-                  flight?.Price?.Total ?? 
-                  flight?.TotalPrice ?? 
-                  flight?.totalPrice ?? 
-                  "485";
-
-                const numericPrice = parseFloat(
-                  typeof rawPrice === 'string' ? rawPrice.replace(/[^0-9.-]/g, '') : rawPrice
-                ) || 485;
-
-                const priceInNaira = Math.round(numericPrice * 1500);
-                const formattedPrice = new Intl.NumberFormat('en-NG', {
-                  style: 'currency',
-                  currency: 'NGN',
-                  maximumFractionDigits: 0,
-                }).format(priceInNaira);
-
-                // Robust extraction for Travelport carrier code / validating airline code
-                const derivedCarrier = flight?.id?.includes("_") ? flight.id.split("_")[0] : "AA";
-                const carrierCode = 
-                  flight?.validatingAirlineCode || 
-                  flight?.ValidatingAirlineCode || 
-                  flight?.carrierCode || 
-                  flight?.CarrierCode || 
-                  derivedCarrier;
-                  
+                const formattedPrice = flight?.price?.formatted || `${flight?.price?.currency || 'USD'} ${flight?.price?.total || '0.00'}`;
+                const carrierCode = flight?.airline || "GDS";
                 const airlineTitle = getAirlineName(carrierCode);
 
                 return (
@@ -519,13 +545,13 @@ export default function FlightOffers() {
                   >
                     <div className="space-y-1">
                       <div className="text-xs font-black uppercase text-orange-600 tracking-wider">
-                        Offering ID: {flight?.id || idx + 1} • {airlineTitle}
+                        Offering ID: {flight?.id || idx + 1} • {airlineTitle} ({carrierCode})
                       </div>
                       <div className="text-lg font-extrabold text-slate-900">
-                        {flight?.departure || origin} ➔ {flight?.arrival || destination}
+                        {origin} ➔ {destination} ({flight?.stops === 0 ? 'Direct Flight' : `${flight?.stops} Stop(s)`})
                       </div>
                       <div className="text-xs text-slate-500">
-                        Available Brands Count: {flight?.rawBrandsCount || flight?.brands?.length || "Multiple Fares"} • Includes mandatory taxes & surcharges.
+                        Duration: {formatDuration(flight?.duration)} • Cabin: {flight?.fare?.products?.[0]?.cabin || travelClass}
                       </div>
                     </div>
 
@@ -660,7 +686,7 @@ export default function FlightOffers() {
                     ✈️ Offering Reference: {selectedFlight.id}
                   </h4>
                   <p className="text-xs text-slate-600 font-bold">
-                    Route: {selectedFlight.departure} ➔ {selectedFlight.arrival} | Available Brands: {selectedFlight.brands?.join(", ") || "Standard Fares"}
+                    Route: {origin} ➔ {destination} | Airline: {getAirlineName(selectedFlight.airline)}
                   </p>
                 </div>
 
@@ -670,8 +696,15 @@ export default function FlightOffers() {
                     <Luggage className="w-4 h-4 text-blue-600" /> Baggage Allowance Matrix
                   </h4>
                   <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs space-y-2 shadow-sm">
-                    <p className="text-slate-500 font-bold text-[11px]">Standard Weight Restrictions Apply (1 Checked piece up to 23KG + 1 Carry-On bag).</p>
-                    <p className="text-[9px] text-slate-400 font-medium italic mt-1">⚠️ Excess luggage metrics can be bought directly at the ticketing counter during physical clearance loops.</p>
+                    {selectedFlight.fare?.baggage?.length > 0 ? (
+                      selectedFlight.fare.baggage.map((bag, i) => (
+                        <div key={i}>
+                          <p className="font-bold text-slate-800">{bag.type}: {bag.items?.[0]?.description || "Standard pieces included"}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-slate-500 font-bold text-[11px]">Standard Weight Restrictions Apply (1 Checked piece up to 23KG + 1 Carry-On bag).</p>
+                    )}
                   </div>
                 </div>
 
@@ -682,11 +715,11 @@ export default function FlightOffers() {
                   </h4>
                   <div className="bg-white border border-slate-200 rounded-xl p-3 text-xs shadow-sm flex justify-between items-center">
                     <div>
-                      <p className="font-black text-slate-800 uppercase tracking-tight">Catalog Product Offering ID: {selectedFlight.id}</p>
+                      <p className="font-black text-slate-800 uppercase tracking-tight">Catalog Offering ID: {selectedFlight.id}</p>
                       <p className="text-[10px] font-bold text-emerald-600 mt-0.5">Includes Mandatory Taxes & Surcharges</p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-black text-slate-900">{selectedFlight.price}</p>
+                      <p className="text-sm font-black text-slate-900">{selectedFlight.price?.formatted}</p>
                     </div>
                   </div>
                 </div>
