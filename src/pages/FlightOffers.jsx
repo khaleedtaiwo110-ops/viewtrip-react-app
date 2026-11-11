@@ -140,10 +140,11 @@ export default function FlightOffers() {
             travelClass: homeClass || "ECONOMY",
             adults: initialAdults,
             children: initialChildren > 0 ? initialChildren : undefined,
-            infants: initialInfants > 0 ? initialInfants : undefined
+            infants: initialInfants > 0 ? initialInfants : undefined,
+            tripType: homeReturnDate ? "return" : "oneway"
           };
 
-          if (homeReturnDate && tripType === "return") {
+          if (homeReturnDate) {
             params.returnDate = homeReturnDate;
           }
 
@@ -238,7 +239,8 @@ export default function FlightOffers() {
         travelClass,
         adults,
         children: children > 0 ? children : undefined,
-        infants: infants > 0 ? infants : undefined
+        infants: infants > 0 ? infants : undefined,
+        tripType
       };
 
       if (tripType === "return" && returnDate) {
@@ -250,6 +252,7 @@ export default function FlightOffers() {
         timeout: 60000
       });
       
+      // Ensure we replace results cleanly with incoming data array/object
       setResults(res.data);
     } catch (err) {
       const serverMessage = err.response?.data?.error || err.response?.data?.message;
