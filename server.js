@@ -19,38 +19,60 @@ app.use(
 );
 app.use(express.json());
 
-// ✅ Travelport OAuth Token Function
+// Travelport OAuth token cache. Travelport documents a 24-hour token lifetime;
+// refresh a little early and reuse the token instead of authenticating on every call.
+let travelportToken = null;
+let travelportTokenExpiresAt = 0;
+let tokenRequestInFlight = null;
+
 async function getTravelportToken() {
-  const authUrl = "https://auth.pp.travelport.net/oauth/token";
-
-  try {
-    const params = new URLSearchParams();
-    params.append("grant_type", "password");
-    params.append("username", process.env.TRAVELPORT_USERNAME);
-    params.append("password", process.env.TRAVELPORT_PASSWORD);
-    params.append("client_id", process.env.TRAVELPORT_CLIENT_ID);
-    params.append("client_secret", process.env.TRAVELPORT_CLIENT_SECRET);
-
-    const response = await axios.post(authUrl, params, {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded"
-      },
-      timeout: 30000
-    });
-
-    console.log("Travelport token generated successfully!");
-    return response.data.access_token;
-
-  } catch (error) {
-    console.error("Travelport Authentication Failed");
-    console.error("Message:", error.message);
-    console.error("Code:", error.code);
-    console.error("Status:", error.response?.status);
-    console.error("Response:", error.response?.data);
-    console.error("URL:", error.config?.url);
-
-    throw new Error("Failed to authenticate with Travelport API");
+  const now = Date.now();
+  if (travelportToken && now < travelportTokenExpiresAt - 5 * 60 * 1000) {
+    return travelportToken;
   }
+  if (tokenRequestInFlight) return tokenRequestInFlight;
+
+  tokenRequestInFlight = (async () => {
+    const authUrl = process.env.TRAVELPORT_AUTH_URL ||
+      (process.env.TRAVELPORT_ENV === "production"
+        ? "https://auth.travelport.net/oauth/token"
+        : "https://auth.pp.travelport.net/oauth/token");
+
+    try {
+      const params = new URLSearchParams();
+      params.append("grant_type", "password");
+      params.append("username", process.env.TRAVELPORT_USERNAME || "");
+      params.append("password", process.env.TRAVELPORT_PASSWORD || "");
+      params.append("client_id", process.env.TRAVELPORT_CLIENT_ID || "");
+      params.append("client_secret", process.env.TRAVELPORT_CLIENT_SECRET || "");
+
+      const response = await axios.post(authUrl, params, {
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        timeout: 30000
+      });
+
+      if (!response.data?.access_token) {
+        throw new Error("Travelport authentication response did not contain access_token.");
+      }
+
+      travelportToken = response.data.access_token;
+      const expiresInSeconds = Number(response.data.expires_in) || 86400;
+      travelportTokenExpiresAt = Date.now() + expiresInSeconds * 1000;
+      console.log("Travelport OAuth token acquired.");
+      return travelportToken;
+    } catch (error) {
+      console.error("Travelport Authentication Failed:", {
+        message: error.message,
+        status: error.response?.status,
+        response: error.response?.data
+      });
+      throw new Error("Failed to authenticate with Travelport API");
+    } finally {
+      tokenRequestInFlight = null;
+    }
+  })();
+
+  return tokenRequestInFlight;
 }
 
 // ==========================================
@@ -106,26 +128,15 @@ const normalizeTravelportResponse = (rawData) => {
     const records = group?.[collectionName] || [];
 
     const exact = new Map();
-    const suffix = new Map();
 
     for (const record of records) {
-      if (!record?.id) continue;
-      exact.set(record.id, record);
-
-      for (let i = 1; i < record.id.length; i++) {
-        const key = record.id.slice(i);
-        if (!suffix.has(key)) {
-          suffix.set(key, record);
-        } else if (suffix.get(key) !== record) {
-          suffix.set(key, null);
-        }
-      }
+      if (record?.id) exact.set(record.id, record);
     }
 
     return {
       get(ref) {
         if (!ref) return null;
-        return exact.get(ref) || (suffix.has(ref) ? suffix.get(ref) : null);
+        return exact.get(ref) || null;
       }
     };
   };
@@ -223,7 +234,7 @@ const normalizeTravelportResponse = (rawData) => {
     };
   };
 
-  const formattedOffers = [];
+    const formattedOffers = [];
 
   for (const offer of offerings) {
     const options = Array.isArray(offer.ProductBrandOptions)
@@ -237,23 +248,11 @@ const normalizeTravelportResponse = (rawData) => {
 
       for (const brandOffering of brandOfferings) {
         const price = brandOffering.BestCombinablePrice || {};
-        let currency = price.CurrencyCode?.value || "NGN";
+        let currency = price.CurrencyCode?.value || null;
         let base = price.Base ?? null;
         let taxes = price.TotalTaxes ?? null;
         let fees = price.TotalFees ?? null;
         let total = price.TotalPrice ?? null;
-
-        // Fallback / Conversion if Travelport returns GBP or USD instead of NGN
-        if (currency === "GBP" || currency === "USD") {
-          const exchangeRates = { GBP: 2100, USD: 1650 }; // Adjust rates as needed
-          const rate = exchangeRates[currency] || 1;
-          
-          currency = "NGN";
-          base = base !== null ? base * rate : null;
-          taxes = taxes !== null ? taxes * rate : null;
-          fees = fees !== null ? fees * rate : null;
-          total = total !== null ? total * rate : null;
-        }
 
         const productRefs = (brandOffering.Product || [])
           .map(item => item.productRef)
@@ -295,21 +294,14 @@ const normalizeTravelportResponse = (rawData) => {
           }))
         }));
 
-        const priceBreakdown = (price.PriceBreakdown || []).map(item => {
-          const rate = (price.CurrencyCode?.value === "GBP") ? 2100 : (price.CurrencyCode?.value === "USD") ? 1650 : 1;
-          const itemBase = item.Amount?.Base !== null ? item.Amount.Base * rate : null;
-          const itemTaxes = item.Amount?.Taxes?.TotalTaxes !== null ? item.Amount.Taxes.TotalTaxes * rate : null;
-          const itemTotal = item.Amount?.Total !== null ? item.Amount.Total * rate : null;
-
-          return {
-            passengerType: item.requestedPassengerType || null,
-            quantity: item.quantity ?? null,
-            base: itemBase,
-            taxes: itemTaxes,
-            total: itemTotal,
-            taxDetails: item.Amount?.Taxes?.Tax || []
-          };
-        });
+        const priceBreakdown = (price.PriceBreakdown || []).map(item => ({
+          passengerType: item.requestedPassengerType || null,
+          quantity: item.quantity ?? null,
+          base: item.Amount?.Base ?? null,
+          taxes: item.Amount?.Taxes?.TotalTaxes ?? null,
+          total: item.Amount?.Total ?? null,
+          taxDetails: item.Amount?.Taxes?.Tax || []
+        }));
 
         formattedOffers.push({
           id: offer.id || null,
@@ -376,7 +368,8 @@ const normalizeTravelportResponse = (rawData) => {
 
   return {
     transactionId: response.transactionId || null,
-    identifier: response.Identifier || catalog?.Identifier || null,
+    identifier: response.Identifier?.value || catalog?.Identifier?.value || null,
+    identifierDetails: response.Identifier || catalog?.Identifier || null,
     result: response.Result || null,
     offers: formattedOffers
   };
@@ -488,7 +481,6 @@ app.get("/api/flight-offers", async (req, res) => {
     if (!accessToken) {
       throw new Error("Travelport access token was not returned.");
     }
-
     const searchCriteriaFlight = [
       {
         "@type": "SearchCriteriaFlight",
@@ -522,7 +514,6 @@ app.get("/api/flight-offers", async (req, res) => {
         SearchCriteriaFlight: searchCriteriaFlight,
         SearchModifiersAir: {
           "@type": "SearchModifiersAir",
-          currencyCode: "NGN",
           CabinPreference: [
             {
               "@type": "CabinPreference",
@@ -530,17 +521,23 @@ app.get("/api/flight-offers", async (req, res) => {
               cabins: [cabin]
             }
           ]
+        },
+        PricingModifiersAir: {
+          "@type": "PricingModifiersAir",
+          currencyCode: "NGN"
+        },
+        CustomResponseModifiersAir: {
+          "@type": "CustomResponseModifiersAir",
+          SearchRepresentation: "Journey"
         }
-      },
-      CustomResponseModifiersAir: {
-        "@type": "CustomResponseModifiersAir",
-        SearchRepresentation: "Journey"
       }
     };
 
     const baseUrl = (
       process.env.TRAVELPORT_BASE_URL ||
-      "https://api.pp.travelport.net/11/air"
+      (process.env.TRAVELPORT_ENV === "production"
+        ? "https://api.travelport.net/11/air"
+        : "https://api.pp.travelport.net/11/air")
     ).replace(/\/+$/, "");
 
     const endpoint = `${baseUrl}/catalog/search/catalogproductofferings`;
@@ -568,7 +565,7 @@ app.get("/api/flight-offers", async (req, res) => {
     console.log(`Travelport returned ${normalized.offers.length} fare offers.`);
 
     const gdsErrors = normalized.result?.Error || [];
-    const hasNoOffersError = gdsErrors.some(err => 
+    const hasNoOffersError = gdsErrors.some(err =>
       err.Message?.includes("NO OFFERS FOUND") || err.SourceCode === "9000"
     );
 
@@ -630,97 +627,157 @@ app.get("/api/flight-offers", async (req, res) => {
     });
   }
 });
-
-// ✅ Pure Travelport Price Offer API
+// Travelport AirPrice: reprice a selected cached Search offer before checkout.
+// The frontend must send the exact search identifier, CatalogProductOffering ID,
+// and Product IDs returned by /api/flight-offers.
 app.post("/api/price-offer", async (req, res) => {
-  const { offeringId } = req.body;
-  
-  if (!offeringId) {
-    return res.status(400).json({ error: "Missing offeringId" });
+  const {
+    identifier,
+    offeringId,
+    productRefs = []
+  } = req.body || {};
+
+  if (!identifier || !offeringId || !Array.isArray(productRefs) || productRefs.length === 0) {
+    return res.status(400).json({
+      success: false,
+      error: "identifier, offeringId and at least one productRef are required. Use values from the selected search offer."
+    });
   }
 
   try {
     const accessToken = await getTravelportToken();
+    const baseUrl = (
+      process.env.TRAVELPORT_BASE_URL ||
+      (process.env.TRAVELPORT_ENV === "production"
+        ? "https://api.travelport.net/11/air"
+        : "https://api.pp.travelport.net/11/air")
+    ).replace(/\/+$/, "");
 
-    const pricePayload = {
-      "@type": "AirPriceRequest",
-      "AirPriceModifiers": {
-        "@type": "AirPriceModifiers",
-        "currencyCode": "NGN"
-      },
-      "CatalogProductOfferingRef": [
-        {
-          "@type": "CatalogProductOfferingRef",
-          "id": offeringId
-        }
-      ]
-    };
+    const productIdentifiers = productRefs
+      .filter(ref => typeof ref === "string" && ref.trim())
+      .map(ref => ({ Identifier: { value: ref.trim() } }));
 
-    console.log(`💰 Pricing offering ID: ${offeringId} in NGN...`);
-
-    const agent = new https.Agent({
-      keepAlive: true,
-      rejectUnauthorized: true
-    });
-
-    const response = await axios.post(
-      "https://api.pp.travelport.net/11/air/price/airprice",
-      pricePayload,
-      {
-        httpsAgent: agent,
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'TVP-PCC-Core': process.env.TRAVELPORT_PCC || '7K99_1G',
-          'TraceId': 'TraceId_' + Date.now()
-        }
-      }
-    );
-
-    const priceData = response.data;
-    
-    let totalPrice = 
-      priceData?.AirPriceResponse?.TotalPrice ||
-      priceData?.TotalPrice ||
-      priceData?.price?.total;
-
-    let currency = 
-      priceData?.AirPriceResponse?.Currency || 
-      priceData?.Currency || 
-      "NGN";
-
-    if (currency === "GBP" || currency === "USD") {
-      const exchangeRates = { GBP: 2100, USD: 1650 };
-      totalPrice = totalPrice * (exchangeRates[currency] || 1);
-      currency = "NGN";
-    }
-
-    if (!totalPrice) {
-      return res.status(502).json({ 
-        success: false, 
-        error: "Price not returned by Travelport API." 
+    if (productIdentifiers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: "No valid product references were supplied."
       });
     }
 
-    res.json({ 
-      success: true, 
-      price: `${currency} ${Number(totalPrice).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+    const pricePayload = {
+      "@type": "OfferQueryBuildFromCatalogProductOfferings",
+      BuildFromCatalogProductOfferingsRequest: {
+        "@type": "BuildFromCatalogProductOfferingsRequestAir",
+        CatalogProductOfferingsIdentifier: {
+          Identifier: { value: String(identifier) }
+        },
+        CatalogProductOfferingSelection: [
+          {
+            CatalogProductOfferingIdentifier: {
+              Identifier: { value: String(offeringId) }
+            },
+            ProductIdentifier: productIdentifiers
+          }
+        ],
+        PricingModifiersAir: {
+          "@type": "PricingModifiersAir",
+          currencyCode: "NGN"
+        },
+        validateInventoryInd: true
+      }
+    };
+
+    const endpoint = `${baseUrl}/price/offers/buildfromcatalogproductofferings`;
+    const response = await axios.post(endpoint, pricePayload, {
+      timeout: 60000,
+      httpsAgent: new https.Agent({ keepAlive: true, rejectUnauthorized: true }),
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "TVP-PCC-Core": process.env.TRAVELPORT_PCC || "7K99_1G",
+        TraceId: `ViewTrip_Price_${Date.now()}`
+      }
     });
 
+    const priceData = response.data?.OfferListResponse || response.data;
+    const pricedOffers = Array.isArray(priceData?.OfferID)
+      ? priceData.OfferID
+      : priceData?.OfferID
+        ? [priceData.OfferID]
+        : [];
+    const pricedOffer = pricedOffers[0];
+    const price = pricedOffer?.Price || {};
+    const total = price.TotalPrice ?? null;
+    const currency = price.CurrencyCode?.value || null;
+
+    if (total === null || !currency) {
+      console.error("Unexpected Travelport AirPrice response:", JSON.stringify(response.data, null, 2));
+      return res.status(502).json({
+        success: false,
+        error: "Travelport did not return a confirmed total price and currency.",
+        providerErrors: priceData?.Result?.Error || [],
+        providerWarnings: priceData?.Result?.Warning || [],
+        rawResponse: response.data
+      });
+    }
+
+    return res.json({
+      success: true,
+      provider: "Travelport",
+      offerId: pricedOffer.id || null,
+      price: {
+        currency,
+        total: Number(total),
+        formatted: `${currency} ${Number(total).toLocaleString("en-GB", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2
+        })}`,
+        base: price.Base ?? null,
+        taxes: price.TotalTaxes ?? null,
+        fees: price.TotalFees ?? null,
+        breakdown: price.PriceBreakdown || []
+      },
+      warnings: priceData?.Result?.Warning || [],
+      errors: priceData?.Result?.Error || [],
+      rawResponse: response.data
+    });
   } catch (error) {
-    console.error("❌ Pricing Error:", error.response?.data || error.message);
-    res.status(error.response?.status || 500).json({
+    console.error("Travelport AirPrice failed:", {
+      status: error.response?.status,
+      response: error.response?.data,
+      message: error.message
+    });
+    return res.status(error.response?.status || 500).json({
       success: false,
       error: error.response?.data || error.message
     });
   }
 });
 
+const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, char => ({
+  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+}[char]));
+
 // ✅ Send Booking Confirmation Email
 app.post("/api/send-booking", async (req, res) => {
-  const booking = req.body;
-  console.log("📩 Booking request received for email:", booking);
+  const booking = req.body || {};
+  const safeName = escapeHtml(booking.name);
+  const safeEmail = escapeHtml(booking.email);
+  const safeType = escapeHtml(booking.type);
+  const safeItemName = escapeHtml(booking.itemName);
+
+  if (!booking.email || !booking.name || !booking.itemName) {
+    return res.status(400).json({
+      success: false,
+      message: "Name, email and itemName are required."
+    });
+  }
+
+  console.log("Booking request received for email:", {
+    type: booking.type,
+    email: booking.email
+  });
 
   try {
     const transporter = nodemailer.createTransport({
@@ -736,13 +793,13 @@ app.post("/api/send-booking", async (req, res) => {
     const adminMail = {
       from: `ViewTrip Travels <no-reply@viewtriptravels.com>`,
       to: process.env.EMAIL_RECEIVER,
-      subject: `🧳 New ${booking.type?.toUpperCase()} Booking from ${booking.name}`,
+      subject: `New ${String(booking.type || "").toUpperCase()} Booking from ${String(booking.name || "")}`,
       html: `
         <h2>New Booking Received</h2>
-        <p><b>Name:</b> ${booking.name}</p>
-        <p><b>Email:</b> ${booking.email}</p>
-        <p><b>Type:</b> ${booking.type}</p>
-        <p><b>Item:</b> ${booking.itemName}</p>
+        <p><b>Name:</b> ${safeName}</p>
+        <p><b>Email:</b> ${safeEmail}</p>
+        <p><b>Type:</b> ${safeType}</p>
+        <p><b>Item:</b> ${safeItemName}</p>
       `,
     };
 
@@ -751,10 +808,10 @@ app.post("/api/send-booking", async (req, res) => {
       to: booking.email,
       subject: `✅ Booking Confirmation - ViewTrip Travels`,
       html: `
-        <h2>Dear ${booking.name},</h2>
-        <p>Thank you for booking your <b>${booking.type}</b> with <b>ViewTrip Travels</b>!</p>
+        <h2>Dear ${safeName},</h2>
+        <p>Thank you for booking your <b>${safeType}</b> with <b>ViewTrip Travels</b>!</p>
         <p>We have received your request for:</p>
-        <p><b>${booking.itemName}</b></p>
+        <p><b>${safeItemName}</b></p>
         <p>Our team will reach out shortly.</p>
         <br/>
         <p>Warm regards,<br/>ViewTrip Travels Team</p>
@@ -764,7 +821,10 @@ app.post("/api/send-booking", async (req, res) => {
     await transporter.sendMail(adminMail);
     await transporter.sendMail(customerMail);
 
-    res.status(200).json({ success: true, message: "Booking emails sent successfully!" });
+    res.status(200).json({
+      success: true,
+      message: "Booking emails sent successfully!"
+    });
 
   } catch (error) {
     console.error("❌ Email Error:", error);

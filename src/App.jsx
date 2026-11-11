@@ -1,5 +1,5 @@
 import React from "react";
-import { Routes, Route, useLocation } from "react-router-dom"; // Added useLocation
+import { Routes, Route, useLocation } from "react-router-dom";
 import Navbar from "./componentss/Navbar";
 import Footer from "./componentss/Footer";
 import Home from "./pages/Home";
@@ -10,7 +10,6 @@ import Testimonials from "./pages/Testimonials";
 import Contact from "./pages/Contact";
 import Booking from "./pages/Booking";
 import FlightOffers from "./pages/FlightOffers";
-import BookingForm from "./components/BookingForm";
 import VisaSection from "./pages/visa";
 import Blog from "./pages/Blog";
 import TrendingHotels from "./pages/TrendingHotels";
@@ -47,7 +46,6 @@ function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/booking" element={<Booking />} />
           <Route path="/flight-offers" element={<FlightOffers />} />
-          <Route path="/book" element={<BookingForm />} />
           <Route path="/visas" element={<VisaSection />} />
           <Route path="/blog" element={<Blog />} />
           <Route path="/Trendinghotels" element={<TrendingHotels />} />
@@ -64,13 +62,3 @@ function App() {
 }
 
 export default App;
-// export default function App() {
-//   return (
-//     <div className="min-h-screen flex items-center justify-center bg-white/80">
-//       <h1 className="text-3xl font-bold text-blue-700">Tailwind Works ✅</h1>
-//     </div>
-//   );
-// }
-
-
-
