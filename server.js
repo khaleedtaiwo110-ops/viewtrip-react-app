@@ -237,8 +237,23 @@ const normalizeTravelportResponse = (rawData) => {
 
       for (const brandOffering of brandOfferings) {
         const price = brandOffering.BestCombinablePrice || {};
-        const currency = price.CurrencyCode?.value || null;
-        const total = price.TotalPrice ?? null;
+        let currency = price.CurrencyCode?.value || "NGN";
+        let base = price.Base ?? null;
+        let taxes = price.TotalTaxes ?? null;
+        let fees = price.TotalFees ?? null;
+        let total = price.TotalPrice ?? null;
+
+        // Fallback / Conversion if Travelport returns GBP or USD instead of NGN
+        if (currency === "GBP" || currency === "USD") {
+          const exchangeRates = { GBP: 2100, USD: 1650 }; // Adjust rates as needed
+          const rate = exchangeRates[currency] || 1;
+          
+          currency = "NGN";
+          base = base !== null ? base * rate : null;
+          taxes = taxes !== null ? taxes * rate : null;
+          fees = fees !== null ? fees * rate : null;
+          total = total !== null ? total * rate : null;
+        }
 
         const productRefs = (brandOffering.Product || [])
           .map(item => item.productRef)
@@ -280,14 +295,21 @@ const normalizeTravelportResponse = (rawData) => {
           }))
         }));
 
-        const priceBreakdown = (price.PriceBreakdown || []).map(item => ({
-          passengerType: item.requestedPassengerType || null,
-          quantity: item.quantity ?? null,
-          base: item.Amount?.Base || null,
-          taxes: item.Amount?.Taxes?.TotalTaxes || null,
-          total: item.Amount?.Total || null,
-          taxDetails: item.Amount?.Taxes?.Tax || []
-        }));
+        const priceBreakdown = (price.PriceBreakdown || []).map(item => {
+          const rate = (price.CurrencyCode?.value === "GBP") ? 2100 : (price.CurrencyCode?.value === "USD") ? 1650 : 1;
+          const itemBase = item.Amount?.Base !== null ? item.Amount.Base * rate : null;
+          const itemTaxes = item.Amount?.Taxes?.TotalTaxes !== null ? item.Amount.Taxes.TotalTaxes * rate : null;
+          const itemTotal = item.Amount?.Total !== null ? item.Amount.Total * rate : null;
+
+          return {
+            passengerType: item.requestedPassengerType || null,
+            quantity: item.quantity ?? null,
+            base: itemBase,
+            taxes: itemTaxes,
+            total: itemTotal,
+            taxDetails: item.Amount?.Taxes?.Tax || []
+          };
+        });
 
         formattedOffers.push({
           id: offer.id || null,
@@ -308,13 +330,13 @@ const normalizeTravelportResponse = (rawData) => {
           duration: products[0]?.totalDuration || null,
           price: {
             currency,
-            base: price.Base ?? null,
-            taxes: price.TotalTaxes ?? null,
-            fees: price.TotalFees ?? null,
+            base,
+            taxes,
+            fees,
             total,
             formatted:
               total !== null && currency
-                ? `${currency} ${Number(total).toFixed(2)}`
+                ? `${currency} ${Number(total).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
                 : null,
             breakdown: priceBreakdown
           },
@@ -364,7 +386,6 @@ const normalizeTravelportResponse = (rawData) => {
 // API ENDPOINTS
 // ==========================================
 
-// ✅ Travelport Flight Offers API
 // ✅ Travelport Flight Offers API
 app.get("/api/flight-offers", async (req, res) => {
   console.log("Travelport search request:", req.query);
@@ -501,6 +522,7 @@ app.get("/api/flight-offers", async (req, res) => {
         SearchCriteriaFlight: searchCriteriaFlight,
         SearchModifiersAir: {
           "@type": "SearchModifiersAir",
+          currencyCode: "NGN",
           CabinPreference: [
             {
               "@type": "CabinPreference",
@@ -545,13 +567,11 @@ app.get("/api/flight-offers", async (req, res) => {
     const normalized = normalizeTravelportResponse(response.data);
     console.log(`Travelport returned ${normalized.offers.length} fare offers.`);
 
-    // Check for GDS / Travelport error response codes
     const gdsErrors = normalized.result?.Error || [];
     const hasNoOffersError = gdsErrors.some(err => 
       err.Message?.includes("NO OFFERS FOUND") || err.SourceCode === "9000"
     );
 
-    // If no offers found or explicit Travelport "NO OFFERS FOUND" message
     if (normalized.offers.length === 0 || hasNoOffersError) {
       return res.status(200).json({
         success: false,
@@ -626,7 +646,7 @@ app.post("/api/price-offer", async (req, res) => {
       "@type": "AirPriceRequest",
       "AirPriceModifiers": {
         "@type": "AirPriceModifiers",
-        "currencyCode": "USD"
+        "currencyCode": "NGN"
       },
       "CatalogProductOfferingRef": [
         {
@@ -636,7 +656,7 @@ app.post("/api/price-offer", async (req, res) => {
       ]
     };
 
-    console.log(`💰 Pricing offering ID: ${offeringId}...`);
+    console.log(`💰 Pricing offering ID: ${offeringId} in NGN...`);
 
     const agent = new https.Agent({
       keepAlive: true,
@@ -660,15 +680,21 @@ app.post("/api/price-offer", async (req, res) => {
 
     const priceData = response.data;
     
-    const totalPrice = 
+    let totalPrice = 
       priceData?.AirPriceResponse?.TotalPrice ||
       priceData?.TotalPrice ||
       priceData?.price?.total;
 
-    const currency = 
+    let currency = 
       priceData?.AirPriceResponse?.Currency || 
       priceData?.Currency || 
-      "USD";
+      "NGN";
+
+    if (currency === "GBP" || currency === "USD") {
+      const exchangeRates = { GBP: 2100, USD: 1650 };
+      totalPrice = totalPrice * (exchangeRates[currency] || 1);
+      currency = "NGN";
+    }
 
     if (!totalPrice) {
       return res.status(502).json({ 
@@ -677,7 +703,10 @@ app.post("/api/price-offer", async (req, res) => {
       });
     }
 
-    res.json({ success: true, price: `${currency} ${totalPrice}` });
+    res.json({ 
+      success: true, 
+      price: `${currency} ${Number(totalPrice).toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` 
+    });
 
   } catch (error) {
     console.error("❌ Pricing Error:", error.response?.data || error.message);

@@ -47,6 +47,12 @@ const getAirlineName = (code) => {
   return dictionary[code.toUpperCase().trim()] || `Airline (${code})`;
 };
 
+// Helper to retrieve airline logo icon from a reliable CDN
+const getAirlineLogo = (code) => {
+  if (!code) return "https://images.kiwi.com/airlines/64/default.png";
+  return `https://assets.duffel.com/img/airlines/for-floor/sq/${code.toUpperCase().trim()}.png`;
+};
+
 const formatDuration = (durationStr) => {
   if (!durationStr) return "N/A";
   const match = durationStr.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
@@ -554,6 +560,7 @@ export default function FlightOffers() {
                 const formattedPerPerson = `${currencyCode} ${perPersonNum.toLocaleString()}`;
                 const carrierCode = flight?.airline || "GDS";
                 const airlineTitle = getAirlineName(carrierCode);
+                const logoUrl = getAirlineLogo(carrierCode);
                 
                 const firstFlight = flight?.flights?.[0] || {};
                 const depTime = firstFlight.departure?.time || "07:05";
@@ -565,6 +572,7 @@ export default function FlightOffers() {
                 
                 const stopsCount = flight?.stops ?? 0;
                 const durationFormatted = formatDuration(flight?.duration || "PT8H");
+                const cabinClass = flight?.fare?.products?.[0]?.cabin || travelClass;
 
                 return (
                   <motion.div
@@ -572,68 +580,115 @@ export default function FlightOffers() {
                     initial={{ opacity: 0, y: 15 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: idx * 0.05 }}
-                    className="bg-white rounded-3xl border border-slate-200/90 shadow-md hover:shadow-2xl transition-all p-5 md:p-6 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6 group relative overflow-hidden"
+                    className="bg-white rounded-3xl border-2 border-slate-200/90 hover:border-blue-500 shadow-md hover:shadow-2xl transition-all duration-300 p-5 md:p-6 flex flex-col lg:flex-row justify-between items-stretch lg:items-center gap-6 group relative overflow-hidden"
                   >
-                    {/* Left Accent Bar on Hover */}
-                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-blue-600 opacity-0 group-hover:opacity-100 transition-opacity" />
+                    {/* Left Color Accent Bar */}
+                    <div className="absolute left-0 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-600 via-indigo-600 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    {/* Flight Metadata Section */}
+                    {/* Flight Info & Timeline Section */}
                     <div className="flex-1 space-y-4">
-                      <div className="flex flex-wrap items-center gap-3">
-                        <span className="text-[10px] font-black uppercase px-2.5 py-1 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg tracking-wider">
-                          Offer ID: {flight?.id || idx + 1}
-                        </span>
-                        <span className="text-xs font-black text-slate-700 flex items-center gap-1.5">
-                          <ShieldCheck className="w-3.5 h-3.5 text-blue-600" /> {airlineTitle} ({carrierCode})
-                        </span>
-                      </div>
-
-                      <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4 py-2 border-y border-slate-100">
-                        {/* Departure / Arrival Times */}
-                        <div className="space-y-0.5">
-                          <div className="text-base font-black text-slate-900 tracking-tight">
-                            {depTime} — {arrTime}
+                      
+                      {/* Airline Header & Badges */}
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          {/* Airline Logo Box */}
+                          <div className="w-12 h-12 rounded-2xl bg-slate-50 border border-slate-200 p-1.5 flex items-center justify-center shrink-0 shadow-sm group-hover:scale-105 transition-transform">
+                            <img 
+                              src={logoUrl} 
+                              alt={airlineTitle}
+                              className="w-full h-full object-contain rounded-xl"
+                              onError={(e) => {
+                                e.target.onerror = null;
+                                e.target.src = "https://images.kiwi.com/airlines/64/default.png";
+                              }}
+                            />
                           </div>
-                          <div className="text-[11px] font-bold text-slate-400">
-                            {depAirport} ➔ {arrAirport}
+
+                          <div>
+                            <h4 className="text-base font-black text-slate-900 tracking-tight flex items-center gap-2">
+                              {airlineTitle}
+                              <span className="text-[11px] font-black uppercase text-slate-400 bg-slate-100 px-2 py-0.5 rounded-md">
+                                {carrierCode}
+                              </span>
+                            </h4>
+                            <div className="flex items-center gap-1.5 text-[11px] font-bold text-slate-500 mt-0.5">
+                              <ShieldCheck className="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                              <span>Offer ID: #{flight?.id || idx + 1}</span>
+                              <span>•</span>
+                              <span className="text-blue-700 font-extrabold uppercase">{cabinClass}</span>
+                            </div>
                           </div>
                         </div>
 
-                        {/* Stops & Duration */}
-                        <div className="space-y-0.5 sm:text-center">
-                          <div className="text-xs font-black text-slate-800">
+                        {/* Fare Brand / Tag */}
+                        <span className="text-[10px] font-black uppercase px-3 py-1 bg-amber-50 text-amber-700 border border-amber-200/80 rounded-full tracking-wider shadow-sm">
+                          {flight?.fare?.brandName || "Standard Corporate Fare"}
+                        </span>
+                      </div>
+
+                      {/* Flight Schedule Bar */}
+                      <div className="grid grid-cols-1 sm:grid-cols-3 items-center gap-4 py-3 px-4 bg-slate-50/80 rounded-2xl border border-slate-100">
+                        {/* Departure */}
+                        <div className="space-y-0.5">
+                          <div className="text-xl font-black text-slate-900 tracking-tight">
+                            {depTime}
+                          </div>
+                          <div className="text-xs font-black text-slate-500 uppercase">
+                            {depAirport} <span className="text-[10px] text-slate-400 font-bold">(Departure)</span>
+                          </div>
+                        </div>
+
+                        {/* Flight Visual Timeline */}
+                        <div className="space-y-1 text-center flex flex-col items-center">
+                          <div className="text-[11px] font-black text-slate-700 flex items-center justify-center gap-1">
+                            <Clock className="w-3 h-3 text-blue-600" /> {durationFormatted}
+                          </div>
+                          
+                          <div className="w-full flex items-center gap-1 my-1 px-2">
+                            <div className="h-[2px] flex-1 bg-slate-300 rounded-full" />
+                            <Plane className="w-4 h-4 text-blue-600 shrink-0 transform rotate-90" />
+                            <div className="h-[2px] flex-1 bg-slate-300 rounded-full" />
+                          </div>
+
+                          <div className={`text-[10px] font-black uppercase px-2 py-0.5 rounded-md ${stopsCount === 0 ? "bg-emerald-100 text-emerald-800" : "bg-orange-100 text-orange-800"}`}>
                             {stopsCount === 0 ? "Direct Flight" : `${stopsCount} Stop(s)`}
                           </div>
-                          <div className="text-[11px] font-bold text-slate-500 flex items-center sm:justify-center gap-1">
-                            <Clock className="w-3 h-3 text-slate-400" /> {durationFormatted}
-                          </div>
                         </div>
 
-                        {/* Route / Cabin Badge */}
+                        {/* Arrival */}
                         <div className="space-y-0.5 sm:text-right">
-                          <div className="text-xs font-black text-indigo-600 uppercase">
-                            {flight?.fare?.products?.[0]?.cabin || travelClass}
+                          <div className="text-xl font-black text-slate-900 tracking-tight">
+                            {arrTime}
                           </div>
-                          <div className="text-[10px] font-bold text-slate-400">
-                            {flight?.fare?.brandName || "Standard Corporate Fare"}
+                          <div className="text-xs font-black text-slate-500 uppercase">
+                            {arrAirport} <span className="text-[10px] text-slate-400 font-bold">(Arrival)</span>
                           </div>
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-4 text-[11px] font-bold text-slate-500">
-                        <span> baggage: 1 Checked Bag Included</span>
+                      {/* Key Inclusions Footer */}
+                      <div className="flex flex-wrap items-center gap-4 text-[11px] font-bold text-slate-600 pt-1">
+                        <span className="flex items-center gap-1.5 text-slate-700">
+                          <Luggage className="w-3.5 h-3.5 text-blue-600" /> 1 Checked Bag Included
+                        </span>
                         <span>•</span>
-                        <span>Instant GDS Ticketing Available</span>
+                        <span className="text-emerald-700 font-extrabold flex items-center gap-1">
+                          ✓ Instant GDS Ticketing
+                        </span>
                       </div>
                     </div>
 
-                    {/* Pricing & CTA Action Box */}
-                    <div className="w-full lg:w-auto flex lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-3 border-t lg:border-t-0 pt-4 lg:pt-0 lg:pl-6 lg:border-l border-slate-100 shrink-0">
+                    {/* Pricing & CTA Action Column */}
+                    <div className="w-full lg:w-48 flex lg:flex-col items-center lg:items-end justify-between lg:justify-center gap-3 border-t lg:border-t-0 pt-4 lg:pt-0 lg:pl-6 lg:border-l-2 border-slate-100 shrink-0">
                       <div className="text-left lg:text-right">
-                        <div className="text-[10px] font-black uppercase text-slate-400">Total Price ({totalPassengersCount} Pax)</div>
-                        <div className="text-2xl font-black text-slate-900 tracking-tight">{formattedPrice}</div>
-                        <div className="text-[10px] font-bold text-emerald-600 mt-0.5">
-                          {formattedPerPerson} / person • Taxes Included
+                        <div className="text-[10px] font-black uppercase text-slate-400 tracking-wider">
+                          Total ({totalPassengersCount} Pax)
+                        </div>
+                        <div className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight">
+                          {formattedPrice}
+                        </div>
+                        <div className="text-[11px] font-extrabold text-emerald-600 mt-0.5">
+                          {formattedPerPerson} / person
                         </div>
                       </div>
 
@@ -642,9 +697,10 @@ export default function FlightOffers() {
                           setSelectedFlight(flight);
                           setShowBookingForm(true);
                         }}
-                        className="px-8 py-3.5 bg-orange-500 hover:bg-orange-600 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg transition transform active:scale-95 flex items-center gap-2"
+                        className="w-auto lg:w-full px-6 py-3.5 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-black text-xs uppercase tracking-wider rounded-2xl shadow-lg hover:shadow-orange-200 transition-all transform active:scale-95 flex items-center justify-center gap-2"
                       >
-                        Select Deal
+                        <span>Select Deal</span>
+                        <Plane className="w-3.5 h-3.5 rotate-45" />
                       </button>
                     </div>
                   </motion.div>
