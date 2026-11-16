@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
+import {
+  FaFacebookF,
+  FaInstagram,
+  FaXTwitter,
+  FaGlobe
+} from "react-icons/fa6";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -25,6 +31,7 @@ const Navbar = () => {
     { name: "About", path: "/about-us" },
     { name: "Contact", path: "/contact" },
     { name: "Search Flights", path: "/flight-offers" },
+    { name: "Flight Tracking", path: "/flight-tracking" },
     { name: "Visas", path: "/visas" },
     { name: "Travel Blog", path: "/blog" },
     { name: "Trending Hotels", path: "/Trendinghotels" },
@@ -41,12 +48,47 @@ const Navbar = () => {
             <span>✉️ info@viewtriptravels.com</span>
           </div>
 
-          <div className="flex items-center gap-4 text-lg">
-            <a href="#" className="hover:text-orange-300">🌐</a>
-            <a href="#" className="hover:text-orange-300">📘</a>
-            <a href="#" className="hover:text-orange-300">📸</a>
-            <a href="#" className="hover:text-orange-300">🐦</a>
-          </div>
+          <div className="flex items-center gap-5 text-lg">
+  <a
+    href="YOUR_WEBSITE_URL"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Website"
+    className="hover:text-orange-400 transition-colors"
+  >
+    <FaGlobe />
+  </a>
+
+  <a
+    href="YOUR_FACEBOOK_URL"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Facebook"
+    className="hover:text-orange-400 transition-colors"
+  >
+    <FaFacebookF />
+  </a>
+
+  <a
+    href="YOUR_INSTAGRAM_URL"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Instagram"
+    className="hover:text-orange-400 transition-colors"
+  >
+    <FaInstagram />
+  </a>
+
+  <a
+    href="YOUR_X_URL"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="X"
+    className="hover:text-orange-400 transition-colors"
+  >
+    <FaXTwitter />
+  </a>
+</div>
         </div>
       )}
 

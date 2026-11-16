@@ -17,6 +17,10 @@ import AboutUs from "./pages/AboutUs";
 import Disclaimer from "./pages/Disclaimer";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsAndConditions from "./pages/TermsAndConditions";
+import AITravelPlanner from "./pages/AITravelPlanner";
+import DestinationDetail from "./components/DestinationDetail";
+import FlightTracking from "./pages/FlightTracking";
+
 
 function App() {
   const location = useLocation();
@@ -53,6 +57,9 @@ function App() {
           <Route path="/terms" element={<TermsAndConditions />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
+          <Route path="/ai-travel-planner" element={<AITravelPlanner />} />
+          <Route path="/destination/:id" element={<DestinationDetail />} />
+          <Route path="/flight-tracking" element={<FlightTracking />} />
         </Routes>
       </main>
 

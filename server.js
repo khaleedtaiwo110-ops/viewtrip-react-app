@@ -1,24 +1,29 @@
 import express from "express";
+import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 import axios from "axios";
 import nodemailer from "nodemailer";
 import https from "https";
+import "dotenv/config";
+import aiRoutes from "./server/routes/aiRoutes.js";
+import destinationRoutes from "./tour/routes/destinations.js";
+import flightTrackingRouter from "./routes/flightTracking.js";
+
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-  })
-);
+// Middleware
+app.use(cors());
 app.use(express.json());
 
+// Routes
+app.use("/api/destinations", destinationRoutes);
+app.use("/api/ai", aiRoutes);
+app.use("/api/flight-tracking", flightTrackingRouter);
 // Travelport OAuth token cache. Travelport documents a 24-hour token lifetime;
 // refresh a little early and reuse the token instead of authenticating on every call.
 let travelportToken = null;
@@ -234,7 +239,7 @@ const normalizeTravelportResponse = (rawData) => {
     };
   };
 
-    const formattedOffers = [];
+  const formattedOffers = [];
 
   for (const offer of offerings) {
     const options = Array.isArray(offer.ProductBrandOptions)
@@ -627,9 +632,8 @@ app.get("/api/flight-offers", async (req, res) => {
     });
   }
 });
+
 // Travelport AirPrice: reprice a selected cached Search offer before checkout.
-// The frontend must send the exact search identifier, CatalogProductOffering ID,
-// and Product IDs returned by /api/flight-offers.
 app.post("/api/price-offer", async (req, res) => {
   const {
     identifier,
@@ -756,7 +760,11 @@ app.post("/api/price-offer", async (req, res) => {
 });
 
 const escapeHtml = (value = "") => String(value).replace(/[&<>"']/g, char => ({
-  "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+  "&": "&",
+  "<": "<",
+  ">": ">",
+  '"': "&quot;",
+  "'": "'"
 }[char]));
 
 // ✅ Send Booking Confirmation Email
@@ -773,11 +781,6 @@ app.post("/api/send-booking", async (req, res) => {
       message: "Name, email and itemName are required."
     });
   }
-
-  console.log("Booking request received for email:", {
-    type: booking.type,
-    email: booking.email
-  });
 
   try {
     const transporter = nodemailer.createTransport({
@@ -832,5 +835,11 @@ app.post("/api/send-booking", async (req, res) => {
   }
 });
 
-// Start server
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Start Server & Connect MongoDB Atlas
+mongoose
+  .connect(process.env.MONGO_URI)
+  .then(() => {
+    console.log("Connected to MongoDB Atlas successfully!");
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+  })
+  .catch((err) => console.error("MongoDB connection error:", err));

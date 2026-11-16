@@ -25,6 +25,7 @@ import AirplaneLoader from "../componentss/AirplaneLoader";
 import { AirportSelector } from "./AirportSelector";
 import AdventureActivities from "./AdventureActivities";
 import WhyBookWithUs from "./WhyBookWithUs";
+import FloatingTravelAssistant from "../components/FloatingTravelAssistant";
 
 export default function Home() {
   const navigate = useNavigate();
@@ -729,6 +730,7 @@ export default function Home() {
         <TrendingHotels />
         <AdventureActivities />
         <Tours />
+        <FloatingTravelAssistant />
       </div>
     </>
   );

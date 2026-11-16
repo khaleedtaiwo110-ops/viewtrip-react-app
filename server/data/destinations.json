@@ -1,0 +1,53 @@
+
+[
+  {
+    "id": 1,
+    "name": "Zanzibar",
+    "country": "Tanzania",
+    "currency": "TZS",
+    "categories": ["beach", "romantic", "relaxation"],
+    "description": "Beautiful beaches, turquoise waters and island experiences.",
+    "estimatedDailyCostPerPersonNGN": 90000,
+    "recommendedDays": 5
+  },
+  {
+    "id": 2,
+    "name": "Accra",
+    "country": "Ghana",
+    "currency": "GHS",
+    "categories": ["beach", "nightlife", "culture"],
+    "description": "A lively city with beaches, restaurants and cultural attractions.",
+    "estimatedDailyCostPerPersonNGN": 50000,
+    "recommendedDays": 4
+  },
+  {
+    "id": 3,
+    "name": "Lagos",
+    "country": "Nigeria",
+    "currency": "NGN",
+    "categories": ["beach", "nightlife", "food"],
+    "description": "Restaurants, beaches, entertainment and city experiences.",
+    "estimatedDailyCostPerPersonNGN": 45000,
+    "recommendedDays": 3
+  },
+  {
+    "id": 4,
+    "name": "Cape Town",
+    "country": "South Africa",
+    "currency": "ZAR",
+    "categories": ["adventure", "beach", "nature"],
+    "description": "Mountain scenery, beaches, wildlife and outdoor activities.",
+    "estimatedDailyCostPerPersonNGN": 110000,
+    "recommendedDays": 5
+  },
+  {
+    "id": 5,
+    "name": "Kigali",
+    "country": "Rwanda",
+    "currency": "RWF",
+    "categories": ["culture", "nature", "relaxation"],
+    "description": "A clean, organised city with cultural and nature experiences.",
+    "estimatedDailyCostPerPersonNGN": 70000,
+    "recommendedDays": 4
+  }
+]

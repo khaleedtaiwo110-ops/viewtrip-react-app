@@ -14,5 +14,18 @@ export default defineConfig({
   build: {
     // 👇 Correct place for output directory
     outDir: 'dist'
+  },
+
+  server: {
+  proxy: {
+    "/api": {
+      target: "http://localhost:5000",
+      changeOrigin: true
+    }
+  }
   }
 });
+
+
+
+
