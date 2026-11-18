@@ -38,7 +38,7 @@ const Navbar = () => {
   ];
 
   return (
-    <header className="fixed top-0 left-0 w-full z-9999">
+    <header className="fixed top-0 left-0 w-full z-[1000]">
 
       {/* ============ TOP BAR — show only on Home + not scrolled ============ */}
       {!isHome && ( 

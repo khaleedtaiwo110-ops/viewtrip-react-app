@@ -233,7 +233,7 @@ const Tours = () => {
   };
 
   return (
-    <section className="min-h-screen bg-[#f8f9fc] pt-10 pb-20">
+    <section className="min-h-screen bg-[#f8f9fc] pt-32 md:pt-36 pb-20">
 
       {/* HERO HEADER */}
       <div className="max-w-7xl mx-auto px-5 sm:px-8 mb-12">
@@ -434,7 +434,7 @@ const Tours = () => {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 30 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-[100] bg-white flex flex-col h-[100dvh] overflow-hidden"
+            className="fixed inset-0 z-[10000] bg-white flex flex-col h-[100dvh] overflow-hidden"
           >
 
             {/* FULL SCREEN HEADER */}
