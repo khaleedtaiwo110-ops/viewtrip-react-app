@@ -1,17 +1,21 @@
+
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Sparkles,
-  X,
   Send,
   Minus,
-  Maximize2,
-  Minimize2,
   Plus,
   MessageSquare,
   Trash2,
   PanelLeftClose,
-  PanelLeftOpen
+  PanelLeftOpen,
+  Globe,
+  MapPin,
+  Compass,
+  Luggage,
+  ArrowUpRight,
+  Menu
 } from "lucide-react";
 
 const STORAGE_KEY = "viewtrip_ai_chat_sessions";
@@ -19,8 +23,31 @@ const STORAGE_KEY = "viewtrip_ai_chat_sessions";
 const DEFAULT_WELCOME = {
   role: "assistant",
   content:
-    "Hello! I'm your ViewTrip AI travel assistant. Tell me where you'd love to go, or give me your budget and I'll help you explore your options."
+    "Welcome to ViewTrip AI! ✨\n\nWhere would you love to go next? I can help you discover destinations, explore tour packages, plan an itinerary, and make the most of your travel budget."
 };
+
+const SUGGESTIONS = [
+  {
+    icon: Globe,
+    title: "Explore destinations",
+    prompt: "Suggest exciting destinations I can visit from Nigeria."
+  },
+  {
+    icon: Compass,
+    title: "Plan a trip",
+    prompt: "Help me plan an unforgettable 5-day holiday."
+  },
+  {
+    icon: Luggage,
+    title: "Find a tour",
+    prompt: "Help me find an interesting tour package."
+  },
+  {
+    icon: MapPin,
+    title: "Travel on a budget",
+    prompt: "Suggest affordable international holiday destinations."
+  }
+];
 
 const createNewSession = () => ({
   id: Date.now().toString(),
@@ -29,127 +56,130 @@ const createNewSession = () => ({
   messages: [DEFAULT_WELCOME]
 });
 
+const loadSessions = () => {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+
+    if (saved) {
+      const parsed = JSON.parse(saved);
+
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (error) {
+    console.error("Failed to load chat history:", error);
+  }
+
+  return [createNewSession()];
+};
+
 export default function FloatingTravelAssistant() {
+  const [sessions, setSessions] = useState(loadSessions);
+  const [activeSessionId, setActiveSessionId] = useState(
+    () => loadSessions()[0]?.id
+  );
+
   const [isOpen, setIsOpen] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const [showSidebar, setShowSidebar] = useState(true);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
 
-  // Load sessions from localStorage
-  const [sessions, setSessions] = useState(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY);
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
-      }
-    } catch (e) {
-      console.error("Failed to parse chat history:", e);
-    }
-    return [createNewSession()];
-  });
-
-  const [activeSessionId, setActiveSessionId] = useState(() => sessions[0]?.id);
-
-  // Dragging state
   const [position, setPosition] = useState({ x: 0, y: 0 });
+
   const dragRef = useRef(null);
   const hasDraggedRef = useRef(false);
   const bottomRef = useRef(null);
+  const inputRef = useRef(null);
 
-  // Sync sessions to localStorage
+  const activeSession =
+    sessions.find((session) => session.id === activeSessionId) ||
+    sessions[0];
+
+  const messages = activeSession?.messages || [DEFAULT_WELCOME];
+
+  // Save conversations
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(sessions));
-    } catch (e) {
-      console.error("Failed to save chat history:", e);
+    } catch (error) {
+      console.error("Failed to save chat history:", error);
     }
   }, [sessions]);
 
-  const activeSession =
-    sessions.find((s) => s.id === activeSessionId) || sessions[0];
-  const messages = activeSession?.messages || [DEFAULT_WELCOME];
-
-  // Scroll to bottom when messages change
+  // Scroll to the latest message
   useEffect(() => {
     if (isOpen) {
-      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      bottomRef.current?.scrollIntoView({
+        behavior: "smooth",
+        block: "end"
+      });
     }
-  }, [messages, isOpen, isExpanded]);
+  }, [messages, loading, isOpen]);
+
+  // Focus the input when opened
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => inputRef.current?.focus(), 400);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
+
+  // Prevent background scrolling while the assistant is open
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [isOpen]);
 
   const handleNewChat = () => {
     const newSession = createNewSession();
-    setSessions((prev) => [newSession, ...prev]);
+
+    setSessions((previous) => [newSession, ...previous]);
     setActiveSessionId(newSession.id);
     setInput("");
   };
 
-  const handleDeleteSession = (e, id) => {
-    e.stopPropagation();
-    setSessions((prev) => {
-      const filtered = prev.filter((s) => s.id !== id);
-      if (filtered.length === 0) {
-        const fresh = createNewSession();
-        setActiveSessionId(fresh.id);
-        return [fresh];
-      }
-      if (id === activeSessionId) {
-        setActiveSessionId(filtered[0].id);
-      }
-      return filtered;
-    });
-  };
+  const handleDeleteSession = (event, id) => {
+    event.stopPropagation();
 
-  const startDrag = (e) => {
-    if (isExpanded) return;
-    if (e.button !== undefined && e.button !== 0) return;
+    const filtered = sessions.filter((session) => session.id !== id);
 
-    e.preventDefault();
-    hasDraggedRef.current = false;
+    if (filtered.length === 0) {
+      const freshSession = createNewSession();
 
-    dragRef.current = {
-      startX: e.clientX,
-      startY: e.clientY,
-      x: position.x,
-      y: position.y
-    };
-
-    e.currentTarget.setPointerCapture(e.pointerId);
-  };
-
-  const moveDrag = (e) => {
-    if (!dragRef.current || isExpanded) return;
-
-    const dx = e.clientX - dragRef.current.startX;
-    const dy = e.clientY - dragRef.current.startY;
-
-    if (Math.abs(dx) > 4 || Math.abs(dy) > 4) {
-      hasDraggedRef.current = true;
+      setSessions([freshSession]);
+      setActiveSessionId(freshSession.id);
+      return;
     }
 
-    const maxX = Math.max(0, window.innerWidth - 90);
-    const maxY = Math.max(0, window.innerHeight - 90);
+    setSessions(filtered);
 
-    setPosition({
-      x: Math.min(maxX, Math.max(-window.innerWidth + 90, dragRef.current.x + dx)),
-      y: Math.min(maxY, Math.max(-window.innerHeight + 90, dragRef.current.y + dy))
-    });
+    if (id === activeSessionId) {
+      setActiveSessionId(filtered[0].id);
+    }
   };
 
-  const stopDrag = () => {
-    dragRef.current = null;
-  };
-
-  const updateSessionMessages = (sessionId, newMessages, firstUserPrompt = null) => {
-    setSessions((prev) =>
-      prev.map((session) => {
+  const updateSessionMessages = (
+    sessionId,
+    newMessages,
+    firstUserPrompt = null
+  ) => {
+    setSessions((previous) =>
+      previous.map((session) => {
         if (session.id !== sessionId) return session;
-        const shouldUpdateTitle =
+
+        const updateTitle =
           firstUserPrompt && session.title === "New Trip Plan";
+
         return {
           ...session,
-          title: shouldUpdateTitle
+          title: updateTitle
             ? firstUserPrompt.slice(0, 32) +
               (firstUserPrompt.length > 32 ? "..." : "")
             : session.title,
@@ -160,349 +190,396 @@ export default function FloatingTravelAssistant() {
     );
   };
 
-  
-const sendMessage = async () => {
-  const message = input.trim();
+  // Floating button dragging
+  const startDrag = (event) => {
+    if (event.button !== undefined && event.button !== 0) return;
 
-  if (!message || loading || !activeSession) return;
+    hasDraggedRef.current = false;
 
-  const currentSessionId = activeSession.id;
+    dragRef.current = {
+      startX: event.clientX,
+      startY: event.clientY,
+      x: position.x,
+      y: position.y
+    };
 
-  // Keep the complete conversation in localStorage,
-  // but send only the latest 8 messages to the backend.
-  const updatedMessages = [
-    ...messages,
-    { role: "user", content: message }
-  ];
+    event.currentTarget.setPointerCapture(event.pointerId);
+  };
 
-  updateSessionMessages(
-    currentSessionId,
-    updatedMessages,
-    message
-  );
+  const moveDrag = (event) => {
+    if (!dragRef.current) return;
 
-  setInput("");
-  setLoading(true);
+    const dx = event.clientX - dragRef.current.startX;
+    const dy = event.clientY - dragRef.current.startY;
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 60000);
+    if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+      hasDraggedRef.current = true;
+    }
 
-  try {
-    console.log("Sending message to ViewTrip AI...");
+    if (!hasDraggedRef.current) return;
 
-    const history = messages
-      .filter(
-        (item) =>
-          item &&
-          ["user", "assistant"].includes(item.role) &&
-          typeof item.content === "string" &&
-          item.content.trim()
+    const maxX = Math.max(0, window.innerWidth - 90);
+    const maxY = Math.max(0, window.innerHeight - 90);
+
+    setPosition({
+      x: Math.min(
+        maxX,
+        Math.max(-window.innerWidth + 90, dragRef.current.x + dx)
+      ),
+      y: Math.min(
+        maxY,
+        Math.max(-window.innerHeight + 90, dragRef.current.y + dy)
       )
-      .slice(-8);
-
-    const response = await fetch("/api/ai/chat", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        message,
-        history
-      })
     });
+  };
 
-    console.log("Backend response status:", response.status);
+  const stopDrag = () => {
+    dragRef.current = null;
+  };
 
-    const data = await response.json();
-
-    console.log("Backend response data:", data);
-
-    if (!response.ok) {
-      throw new Error(
-        data.error || "ViewTrip AI request failed."
-      );
+  const handleLauncherClick = () => {
+    if (hasDraggedRef.current) {
+      hasDraggedRef.current = false;
+      return;
     }
 
-    const replyContent =
-      data.answer ||
-      data.reply ||
-      data.response;
+    setIsOpen(true);
+  };
 
-    if (!replyContent) {
-      throw new Error("The AI returned an empty response.");
+  // Send message to backend
+  const sendMessage = async (customMessage = null) => {
+    const message = (customMessage || input).trim();
+
+    if (!message || loading || !activeSession) return;
+
+    const currentSessionId = activeSession.id;
+
+    const updatedMessages = [
+      ...messages,
+      { role: "user", content: message }
+    ];
+
+    updateSessionMessages(
+      currentSessionId,
+      updatedMessages,
+      message
+    );
+
+    setInput("");
+    setLoading(true);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 60000);
+
+    try {
+      const history = messages
+        .filter(
+          (item) =>
+            item &&
+            ["user", "assistant"].includes(item.role) &&
+            typeof item.content === "string" &&
+            item.content.trim()
+        )
+        .slice(-8);
+
+      const response = await fetch("/api/ai/chat", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          message,
+          history
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "ViewTrip AI request failed.");
+      }
+
+      const replyContent =
+        data.answer || data.reply || data.response;
+
+      if (!replyContent) {
+        throw new Error("The AI returned an empty response.");
+      }
+
+      updateSessionMessages(currentSessionId, [
+        ...updatedMessages,
+        {
+          role: "assistant",
+          content: replyContent
+        }
+      ]);
+    } catch (error) {
+      console.error("ViewTrip AI error:", error);
+
+      const errorMessage =
+        error.name === "AbortError"
+          ? "ViewTrip AI took too long to respond. Please try again."
+          : error.message ||
+            "Sorry, I'm having trouble connecting right now.";
+
+      updateSessionMessages(currentSessionId, [
+        ...updatedMessages,
+        {
+          role: "assistant",
+          content: errorMessage
+        }
+      ]);
+    } finally {
+      clearTimeout(timeout);
+      setLoading(false);
     }
-
-    updateSessionMessages(currentSessionId, [
-      ...updatedMessages,
-      {
-        role: "assistant",
-        content: replyContent
-      }
-    ]);
-
-  } catch (error) {
-    console.error("ViewTrip AI error:", error);
-
-    const errorMessage =
-      error.name === "AbortError"
-        ? "ViewTrip AI took too long to respond. Please try again."
-        : error.message ||
-          "Sorry, I'm having trouble connecting right now.";
-
-    updateSessionMessages(currentSessionId, [
-      ...updatedMessages,
-      {
-        role: "assistant",
-        content: errorMessage
-      }
-    ]);
-
-  } finally {
-    clearTimeout(timeout);
-    setLoading(false);
-    console.log("ViewTrip AI request finished.");
-  }
-};
-
+  };
 
   return (
     <>
-      {/* Backdrop when expanded */}
+      {/* FULL-SCREEN TRAVEL ASSISTANT */}
       <AnimatePresence>
-        {isOpen && isExpanded && (
+        {isOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={() => setIsExpanded(false)}
-            className="fixed inset-0 bg-black/40 backdrop-blur-xs z-[9998]"
-          />
-        )}
-      </AnimatePresence>
-
-      <div
-        className={
-          isOpen && isExpanded
-            ? "fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-6 pointer-events-none"
-            : "fixed bottom-6 right-6 z-[9999]"
-        }
-        style={
-          isOpen && isExpanded
-            ? undefined
-            : { transform: `translate(${position.x}px, ${position.y}px)` }
-        }
-      >
-        <AnimatePresence>
-          {isOpen && (
-            <motion.div
-              layout
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              exit={{ opacity: 0, y: 20, scale: 0.95 }}
-              transition={{ type: "spring", stiffness: 320, damping: 28 }}
-              className={`pointer-events-auto bg-white shadow-2xl border border-gray-200 flex overflow-hidden ${
-                isExpanded
-                  ? "w-full max-w-5xl h-[85vh] rounded-2xl"
-                  : "absolute bottom-20 right-0 w-[min(390px,calc(100vw-32px))] h-[520px] max-h-[75vh] rounded-3xl"
-              }`}
-            >
-              {/* Left History Sidebar */}
-              <AnimatePresence initial={false}>
-                {(isExpanded ? showSidebar : showSidebar && false) ||
-                (showSidebar && isExpanded) ? (
-                  <motion.aside
-                    initial={{ width: 0, opacity: 0 }}
-                    animate={{ width: 260, opacity: 1 }}
-                    exit={{ width: 0, opacity: 0 }}
-                    transition={{ duration: 0.2 }}
-                    className="bg-slate-900 text-slate-200 flex flex-col border-r border-slate-800 shrink-0 overflow-hidden"
-                  >
-                    <div className="p-3 border-b border-slate-800">
-                      <button
-                        type="button"
-                        onClick={handleNewChat}
-                        className="w-full flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium px-3 py-2.5 rounded-xl transition cursor-pointer"
-                      >
-                        <Plus size={17} />
-                        <span>New Trip Chat</span>
-                      </button>
-                    </div>
-
-                    <div className="px-3 pt-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                      Recent Conversations
-                    </div>
-
-                    <div className="flex-1 overflow-y-auto px-2 py-1 space-y-1">
-                      {sessions.map((session) => {
-                        const isActive = session.id === activeSession.id;
-                        return (
-                          <div
-                            key={session.id}
-                            onClick={() => setActiveSessionId(session.id)}
-                            className={`group flex items-center justify-between gap-2 px-3 py-2.5 rounded-xl text-sm cursor-pointer transition ${
-                              isActive
-                                ? "bg-slate-800 text-white font-medium"
-                                : "text-slate-300 hover:bg-slate-800/60"
-                            }`}
-                          >
-                            <div className="flex items-center gap-2.5 min-w-0">
-                              <MessageSquare
-                                size={15}
-                                className={
-                                  isActive ? "text-blue-400 shrink-0" : "text-slate-500 shrink-0"
-                                }
-                              />
-                              <span className="truncate">{session.title}</span>
-                            </div>
-
-                            <button
-                              type="button"
-                              onClick={(e) => handleDeleteSession(e, session.id)}
-                              className="opacity-0 group-hover:opacity-100 p-1 hover:text-red-400 rounded transition"
-                              title="Delete chat"
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                        );
-                      })}
-                    </div>
-
-                    <div className="p-3 border-t border-slate-800 text-[11px] text-slate-400">
-                      ViewTrip AI Workspace
-                    </div>
-                  </motion.aside>
-                ) : null}
-              </AnimatePresence>
-
-              {/* Compact Mode History Drawer (if toggled while not expanded) */}
-              {!isExpanded && showSidebar && (
-                <div className="w-48 bg-slate-900 text-slate-200 flex flex-col border-r border-slate-800 shrink-0">
-                  <div className="p-2.5 border-b border-slate-800">
-                    <button
-                      type="button"
-                      onClick={handleNewChat}
-                      className="w-full flex items-center justify-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium px-2.5 py-2 rounded-lg transition"
-                    >
-                      <Plus size={14} />
-                      <span>New Chat</span>
-                    </button>
-                  </div>
-                  <div className="flex-1 overflow-y-auto p-1.5 space-y-1">
-                    {sessions.map((session) => (
-                      <div
-                        key={session.id}
-                        onClick={() => setActiveSessionId(session.id)}
-                        className={`group flex items-center justify-between gap-1 px-2 py-2 rounded-lg text-xs cursor-pointer ${
-                          session.id === activeSession.id
-                            ? "bg-slate-800 text-white"
-                            : "text-slate-300 hover:bg-slate-800/50"
-                        }`}
-                      >
-                        <span className="truncate">{session.title}</span>
-                        <button
-                          type="button"
-                          onClick={(e) => handleDeleteSession(e, session.id)}
-                          className="opacity-0 group-hover:opacity-100 hover:text-red-400"
-                        >
-                          <Trash2 size={12} />
-                        </button>
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.22 }}
+            className="fixed inset-0 z-[99999] bg-white flex overflow-hidden"
+          >
+            {/* SIDEBAR */}
+            <AnimatePresence initial={false}>
+              {showSidebar && (
+                <motion.aside
+                  initial={{ width: 0, opacity: 0 }}
+                  animate={{ width: 270, opacity: 1 }}
+                  exit={{ width: 0, opacity: 0 }}
+                  transition={{ duration: 0.22 }}
+                  className="hidden sm:flex shrink-0 flex-col bg-[#07182e] text-white overflow-hidden"
+                >
+                  <div className="p-5 border-b border-white/10">
+                    <div className="flex items-center gap-3 mb-7">
+                      <div className="w-10 h-10 rounded-xl bg-blue-500 flex items-center justify-center">
+                        <Globe size={22} />
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
 
-              {/* Main Chat Area */}
-              <div className="flex-1 flex flex-col min-w-0 bg-white">
-                {/* Header */}
-                <div className="bg-gradient-to-r from-blue-700 to-blue-500 text-white px-4 py-3.5 flex items-center justify-between shrink-0">
-                  <div className="flex items-center gap-2.5 min-w-0">
-                    <button
-                      type="button"
-                      onClick={() => setShowSidebar((prev) => !prev)}
-                      className="p-1.5 hover:bg-white/20 rounded-lg transition"
-                      title={showSidebar ? "Hide history" : "Show history"}
-                    >
-                      {showSidebar ? (
-                        <PanelLeftClose size={18} />
-                      ) : (
-                        <PanelLeftOpen size={18} />
-                      )}
-                    </button>
-
-                    <div className="bg-white/20 p-2 rounded-xl shrink-0">
-                      <Sparkles size={18} />
+                      <div>
+                        <h2 className="font-bold text-lg tracking-tight">
+                          ViewTrip
+                        </h2>
+                        <p className="text-[11px] text-blue-200">
+                          AI Travel Assistant
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-sm truncate">
-                        {isExpanded ? activeSession.title : "ViewTrip AI"}
-                      </h3>
-                      <p className="text-[11px] text-blue-100 truncate">
-                        Your personal travel assistant
+
+                    <button
+                      onClick={handleNewChat}
+                      className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm px-4 py-3 rounded-xl transition"
+                    >
+                      <Plus size={18} />
+                      Start a new trip
+                    </button>
+                  </div>
+
+                  <div className="px-5 pt-6 pb-3">
+                    <p className="text-[10px] font-bold uppercase tracking-[2px] text-slate-400">
+                      Your conversations
+                    </p>
+                  </div>
+
+                  <div className="flex-1 overflow-y-auto px-3 pb-4 space-y-1">
+                    {sessions.map((session) => {
+                      const isActive = session.id === activeSessionId;
+
+                      return (
+                        <div
+                          key={session.id}
+                          onClick={() => {
+                            setActiveSessionId(session.id);
+                            setInput("");
+                          }}
+                          className={`group flex items-center justify-between gap-2 px-3 py-3 rounded-xl cursor-pointer transition ${
+                            isActive
+                              ? "bg-white/10 text-white"
+                              : "text-slate-300 hover:bg-white/5"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <MessageSquare
+                              size={16}
+                              className={
+                                isActive
+                                  ? "text-blue-400 shrink-0"
+                                  : "text-slate-500 shrink-0"
+                              }
+                            />
+
+                            <span className="text-sm truncate">
+                              {session.title}
+                            </span>
+                          </div>
+
+                          <button
+                            onClick={(event) =>
+                              handleDeleteSession(event, session.id)
+                            }
+                            className="opacity-0 group-hover:opacity-100 text-slate-400 hover:text-red-400 p-1 transition"
+                            title="Delete conversation"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="p-5 border-t border-white/10">
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <Sparkles size={15} />
+                      <span className="text-xs">
+                        Powered by ViewTrip AI
+                      </span>
+                    </div>
+                  </div>
+                </motion.aside>
+              )}
+            </AnimatePresence>
+
+            {/* MAIN WORKSPACE */}
+            <div className="flex-1 min-w-0 flex flex-col bg-[#f7f9fc]">
+              {/* TOP NAVIGATION */}
+              <header className="h-[76px] shrink-0 bg-white border-b border-gray-200 flex items-center justify-between px-4 sm:px-7">
+                <div className="flex items-center gap-3 min-w-0">
+                  <button
+                    onClick={() => setShowSidebar((previous) => !previous)}
+                    className="p-2.5 rounded-xl hover:bg-gray-100 text-gray-600 transition"
+                    title="Toggle conversation history"
+                  >
+                    {showSidebar ? (
+                      <PanelLeftClose size={20} />
+                    ) : (
+                      <PanelLeftOpen size={20} />
+                    )}
+                  </button>
+
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shadow-md shadow-blue-200">
+                    <Sparkles size={20} />
+                  </div>
+
+                  <div className="min-w-0">
+                    <h1 className="font-bold text-gray-900 text-sm sm:text-base truncate">
+                      ViewTrip AI
+                    </h1>
+                    <div className="flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-green-500" />
+                      <p className="text-[11px] text-gray-500">
+                        Your personal travel companion
                       </p>
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-1">
-                    {!isExpanded && (
-                      <button
-                        type="button"
-                        onClick={handleNewChat}
-                        className="p-2 hover:bg-white/20 rounded-lg transition"
-                        title="New chat"
-                      >
-                        <Plus size={18} />
-                      </button>
-                    )}
-
-                    <button
-                      type="button"
-                      onClick={() => setIsExpanded((prev) => !prev)}
-                      className="p-2 hover:bg-white/20 rounded-lg transition"
-                      title={isExpanded ? "Collapse window" : "Expand window"}
-                      aria-label={isExpanded ? "Collapse assistant" : "Expand assistant"}
-                    >
-                      {isExpanded ? <Minimize2 size={18} /> : <Maximize2 size={18} />}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsExpanded(false);
-                        setIsOpen(false);
-                      }}
-                      className="p-2 hover:bg-white/20 rounded-lg transition"
-                      title="Close"
-                      aria-label="Close assistant"
-                    >
-                      <Minus size={19} />
-                    </button>
-                  </div>
                 </div>
 
-                {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-gray-50">
-                  <div
-                    className={`space-y-4 ${
-                      isExpanded ? "max-w-3xl mx-auto w-full" : ""
-                    }`}
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleNewChat}
+                    className="hidden sm:flex items-center gap-2 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition"
                   >
+                    <Plus size={16} />
+                    New chat
+                  </button>
+
+                  <button
+                    onClick={() => setIsOpen(false)}
+                    className="p-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 transition"
+                    title="Minimize assistant"
+                    aria-label="Minimize assistant"
+                  >
+                    <Minus size={20} />
+                  </button>
+                </div>
+              </header>
+
+              {/* CHAT CONTENT */}
+              <main className="flex-1 overflow-y-auto px-4 sm:px-8 py-8">
+                <div className="max-w-4xl mx-auto">
+                  {messages.length === 1 && (
+                    <div className="mb-10 pt-5 sm:pt-12">
+                      <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 text-blue-700 text-xs font-semibold mb-6">
+                        <Sparkles size={14} />
+                        YOUR NEXT ADVENTURE STARTS HERE
+                      </div>
+
+                      <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-[#10243e] leading-tight mb-4">
+                        Where do you want
+                        <br className="hidden sm:block" /> to go{" "}
+                        <span className="text-blue-600">next?</span>
+                      </h2>
+
+                      <p className="text-gray-500 text-sm sm:text-base max-w-xl leading-relaxed">
+                        Tell us what you're dreaming of. Discover destinations,
+                        explore tours and create a trip that fits your budget.
+                      </p>
+
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-8">
+                        {SUGGESTIONS.map((suggestion) => {
+                          const Icon = suggestion.icon;
+
+                          return (
+                            <button
+                              key={suggestion.title}
+                              onClick={() => sendMessage(suggestion.prompt)}
+                              disabled={loading}
+                              className="group text-left bg-white border border-gray-200 hover:border-blue-300 hover:shadow-lg hover:shadow-blue-100/60 rounded-2xl p-4 transition disabled:opacity-50"
+                            >
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center group-hover:bg-blue-600 group-hover:text-white transition">
+                                  <Icon size={19} />
+                                </div>
+
+                                <ArrowUpRight
+                                  size={18}
+                                  className="text-gray-400 group-hover:text-blue-600 transition"
+                                />
+                              </div>
+
+                              <h3 className="font-bold text-sm text-gray-800">
+                                {suggestion.title}
+                              </h3>
+
+                              <p className="text-xs text-gray-500 mt-1">
+                                {suggestion.prompt}
+                              </p>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* MESSAGES */}
+                  <div className="space-y-6">
                     {messages.map((msg, index) => (
                       <div
                         key={index}
-                        className={`flex ${
-                          msg.role === "user" ? "justify-end" : "justify-start"
+                        className={`flex gap-3 ${
+                          msg.role === "user"
+                            ? "justify-end"
+                            : "justify-start"
                         }`}
                       >
+                        {msg.role === "assistant" && (
+                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shrink-0 shadow-sm">
+                            <Sparkles size={17} />
+                          </div>
+                        )}
+
                         <div
-                          className={`px-4 py-3 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
-                            isExpanded ? "max-w-[75%]" : "max-w-[85%]"
-                          } ${
+                          className={`max-w-[88%] sm:max-w-[75%] px-5 py-4 rounded-2xl text-sm leading-7 whitespace-pre-wrap ${
                             msg.role === "user"
-                              ? "bg-blue-600 text-white rounded-br-md"
-                              : "bg-white text-gray-700 shadow-sm border border-gray-100 rounded-bl-md"
+                              ? "bg-blue-600 text-white rounded-br-sm shadow-md shadow-blue-100"
+                              : "bg-white text-gray-700 rounded-bl-sm border border-gray-100 shadow-sm"
                           }`}
                         >
                           {msg.content}
@@ -511,77 +588,92 @@ const sendMessage = async () => {
                     ))}
 
                     {loading && (
-                      <div className="bg-white rounded-xl p-3 w-fit text-xs text-gray-500 shadow-sm border border-gray-100">
-                        ViewTrip AI is thinking...
+                      <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+                          <Sparkles size={17} />
+                        </div>
+
+                        <div className="bg-white border border-gray-100 shadow-sm rounded-2xl px-5 py-4 flex items-center gap-2">
+                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:150ms]" />
+                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:300ms]" />
+                          <span className="text-xs text-gray-500 ml-2">
+                            Planning your next adventure...
+                          </span>
+                        </div>
                       </div>
                     )}
 
                     <div ref={bottomRef} />
                   </div>
                 </div>
+              </main>
 
-                {/* Input */}
-                <div className="p-3 sm:p-4 border-t bg-white shrink-0">
+              {/* MESSAGE INPUT */}
+              <footer className="shrink-0 bg-white border-t border-gray-200 px-4 sm:px-8 pt-4 pb-5">
+                <div className="max-w-4xl mx-auto">
                   <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
+                    onSubmit={(event) => {
+                      event.preventDefault();
                       sendMessage();
                     }}
-                    className={`flex items-center gap-2 ${
-                      isExpanded ? "max-w-3xl mx-auto w-full" : ""
-                    }`}
+                    className="flex items-center gap-3 bg-[#f4f6fa] border border-gray-200 focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50 rounded-2xl p-2 transition"
                   >
                     <input
+                      ref={inputRef}
                       value={input}
-                      onChange={(e) => setInput(e.target.value)}
-                      placeholder="Plan your next adventure..."
-                      className="flex-1 min-w-0 bg-gray-100 rounded-full px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-blue-400"
+                      onChange={(event) => setInput(event.target.value)}
+                      placeholder="Ask anything about your next trip..."
+                      className="flex-1 min-w-0 bg-transparent px-3 py-3 text-sm outline-none text-gray-800 placeholder:text-gray-400"
                       disabled={loading}
                     />
 
                     <button
                       type="submit"
                       disabled={!input.trim() || loading}
-                      className="bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white p-3 rounded-full transition shrink-0"
+                      className="w-11 h-11 shrink-0 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:opacity-40 text-white flex items-center justify-center transition shadow-md shadow-blue-100"
                       aria-label="Send message"
                     >
-                      <Send size={17} />
+                      <Send size={18} />
                     </button>
                   </form>
-                  <p className="text-[10px] text-gray-400 text-center mt-2">
-                    Travel suggestions and estimates by ViewTrip AI
+
+                  <p className="text-[10px] text-gray-400 text-center mt-3">
+                    ViewTrip AI can make mistakes. Confirm important travel
+                    details before booking.
                   </p>
                 </div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        {/* Floating draggable launcher button (hidden when expanded) */}
-        {!(isOpen && isExpanded) && (
-          <motion.button
-            type="button"
-            onClick={() => {
-              if (!hasDraggedRef.current) {
-                setIsOpen((prev) => !prev);
-              }
-            }}
-            onPointerDown={startDrag}
-            onPointerMove={moveDrag}
-            onPointerUp={stopDrag}
-            onPointerCancel={stopDrag}
-            className="relative w-16 h-16 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 text-white shadow-xl flex items-center justify-center hover:scale-105 transition cursor-grab active:cursor-grabbing select-none"
-            style={{ touchAction: "none" }}
-            aria-label="Open ViewTrip AI"
-          >
-            {isOpen ? <X size={26} /> : <Sparkles size={27} />}
-
-            {!isOpen && (
-              <span className="absolute -top-1 -right-1 bg-green-500 border-2 border-white w-4 h-4 rounded-full" />
-            )}
-          </motion.button>
+              </footer>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
+
+      {/* FLOATING LAUNCHER */}
+      {!isOpen && (
+        <motion.button
+          type="button"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.07 }}
+          whileTap={{ scale: 0.94 }}
+          onClick={handleLauncherClick}
+          onPointerDown={startDrag}
+          onPointerMove={moveDrag}
+          onPointerUp={stopDrag}
+          onPointerCancel={stopDrag}
+          className="fixed bottom-6 right-6 z-[99998] w-[66px] h-[66px] rounded-full bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-800 text-white shadow-2xl shadow-blue-900/30 flex items-center justify-center cursor-grab active:cursor-grabbing select-none border-[3px] border-white"
+          style={{
+            transform: `translate(${position.x}px, ${position.y}px)`,
+            touchAction: "none"
+          }}
+          aria-label="Open ViewTrip AI"
+        >
+          <Sparkles size={29} />
+
+          <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-green-500 border-[3px] border-white" />
+        </motion.button>
+      )}
     </>
   );
 }
