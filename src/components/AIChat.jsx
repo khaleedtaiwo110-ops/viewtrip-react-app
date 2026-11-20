@@ -38,7 +38,9 @@ export default function AIChat() {
   try {
     console.log("Sending message to ViewTrip AI...");
 
-    const response = await fetch("/api/ai/chat", {
+    const response = await fetch(
+      "https://view-trip-travels-app.onrender.com/api/ai/chat",
+      {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
