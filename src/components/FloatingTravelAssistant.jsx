@@ -1,6 +1,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Sparkles,
   Send,
@@ -558,54 +560,75 @@ export default function FloatingTravelAssistant() {
                     </div>
                   )}
 
-                  {/* MESSAGES */}
-                  <div className="space-y-6">
-                    {messages.map((msg, index) => (
-                      <div
-                        key={index}
-                        className={`flex gap-3 ${
-                          msg.role === "user"
-                            ? "justify-end"
-                            : "justify-start"
-                        }`}
-                      >
-                        {msg.role === "assistant" && (
-                          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shrink-0 shadow-sm">
-                            <Sparkles size={17} />
-                          </div>
-                        )}
+                  
+{/* MESSAGES */}
+<div className="space-y-7">
+  {messages.map((msg, index) => (
+    <div
+      key={index}
+      className={`flex gap-3 ${
+        msg.role === "user" ? "justify-end" : "justify-start"
+      }`}
+    >
+      {msg.role === "assistant" && (
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white flex items-center justify-center shrink-0 shadow-sm">
+          <Sparkles size={17} />
+        </div>
+      )}
 
-                        <div
-                          className={`max-w-[88%] sm:max-w-[75%] px-5 py-4 rounded-2xl text-sm leading-7 whitespace-pre-wrap ${
-                            msg.role === "user"
-                              ? "bg-blue-600 text-white rounded-br-sm shadow-md shadow-blue-100"
-                              : "bg-white text-gray-700 rounded-bl-sm border border-gray-100 shadow-sm"
-                          }`}
-                        >
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))}
+      <div
+        className={`max-w-[92%] sm:max-w-[82%] px-5 py-4 rounded-2xl ${
+          msg.role === "user"
+            ? "bg-blue-600 text-white rounded-br-sm shadow-md shadow-blue-100 text-sm leading-7"
+            : "bg-white text-gray-700 rounded-bl-sm border border-gray-100 shadow-sm"
+        }`}
+      >
+        {msg.role === "assistant" ? (
+          <div className="text-[14px] leading-7 text-slate-600
+            [&_h1]:text-2xl [&_h1]:font-extrabold [&_h1]:text-[#10243e] [&_h1]:mb-4
+            [&_h2]:text-xl [&_h2]:font-bold [&_h2]:text-[#10243e] [&_h2]:mt-7 [&_h2]:mb-3
+            [&_h3]:text-base [&_h3]:font-bold [&_h3]:text-[#10243e] [&_h3]:mt-5 [&_h3]:mb-2
+            [&_p]:mb-3 [&_p]:leading-7
+            [&_strong]:font-bold [&_strong]:text-[#10243e]
+            [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:space-y-2 [&_ul]:mb-4
+            [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:space-y-2 [&_ol]:mb-4
+            [&_li]:pl-1
+            [&_hr]:my-6 [&_hr]:border-gray-100
+            [&_blockquote]:border-l-4 [&_blockquote]:border-blue-500 [&_blockquote]:pl-4 [&_blockquote]:text-gray-500
+          ">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {msg.content}
+            </ReactMarkdown>
+          </div>
+        ) : (
+          <div className="whitespace-pre-wrap">
+            {msg.content}
+          </div>
+        )}
+      </div>
+    </div>
+  ))}
 
-                    {loading && (
-                      <div className="flex items-center gap-3">
-                        <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center">
-                          <Sparkles size={17} />
-                        </div>
+  {loading && (
+    <div className="flex items-center gap-3">
+      <div className="w-9 h-9 rounded-xl bg-blue-600 text-white flex items-center justify-center">
+        <Sparkles size={17} />
+      </div>
 
-                        <div className="bg-white border border-gray-100 shadow-sm rounded-2xl px-5 py-4 flex items-center gap-2">
-                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
-                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:150ms]" />
-                          <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:300ms]" />
-                          <span className="text-xs text-gray-500 ml-2">
-                            Planning your next adventure...
-                          </span>
-                        </div>
-                      </div>
-                    )}
+      <div className="bg-white border border-gray-100 shadow-sm rounded-2xl px-5 py-4 flex items-center gap-2">
+        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce" />
+        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:150ms]" />
+        <span className="w-2 h-2 bg-blue-500 rounded-full animate-bounce [animation-delay:300ms]" />
+        <span className="text-xs text-gray-500 ml-2">
+          Planning your next adventure...
+        </span>
+      </div>
+    </div>
+  )}
 
-                    <div ref={bottomRef} />
-                  </div>
+  <div ref={bottomRef} />
+</div>
+
                 </div>
               </main>
 

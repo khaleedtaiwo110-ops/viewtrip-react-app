@@ -58,23 +58,37 @@ export default function AIChat() {
 
     console.log("Backend response status:", response.status);
 
-    const data = await response.json();
+    
+const responseText = await response.text();
 
-    if (!response.ok) {
-      throw new Error(data.error || "ViewTrip AI request failed.");
-    }
+console.log("Backend status:", response.status);
+console.log("Backend response:", responseText);
 
-    if (!data.answer) {
-      throw new Error("The AI returned an empty response.");
-    }
+let data;
 
-    setMessages(prev => [
-      ...prev,
-      {
-        role: "assistant",
-        content: data.answer
-      }
-    ]);
+try {
+  data = JSON.parse(responseText);
+} catch (error) {
+  throw new Error(
+    `Invalid backend response (HTTP ${response.status}). Check the console for details.`
+  );
+}
+
+if (!response.ok) {
+  throw new Error(data.error || "ViewTrip AI request failed.");
+}
+
+if (!data.answer) {
+  throw new Error("The AI returned an empty response.");
+}
+
+setMessages(prev => [
+  ...prev,
+  {
+    role: "assistant",
+    content: data.answer
+  }
+]);
 
     setRecommendations(data.recommendations || []);
 
